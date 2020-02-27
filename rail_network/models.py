@@ -49,6 +49,17 @@ class Map(AbstractModel):
                 m[node.pk][link.head_id] = link.distance
         return m
 
+    @property
+    def incidence_map(self):
+        m = {}
+        for node in self.nodes.all():
+            m[node.pk] = {}
+            for link in node.outgoing_links.all():
+                m[node.pk][link.pk] = link.distance
+            for link in node.incoming_links.all():
+                m[node.pk][link.pk] = (-1) * link.distance
+        return m
+
     class Meta:
         verbose_name = _("Map")
         verbose_name_plural = _("Maps")
