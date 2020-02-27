@@ -40,6 +40,10 @@ class Map(AbstractModel):
             return self.title
         return _("Map ID %(id)s") % {'id': self.pk}
 
+    @property
+    def adjacency_matrix(self):
+        return
+
     class Meta:
         verbose_name = _("Map")
         verbose_name_plural = _("Maps")
@@ -59,6 +63,7 @@ class Node(AbstractModel):
     pos_v = IntegerField(
         verbose_name=_("Vertical Position"),
     )
+    # TODO: Add validation to prevent links to nodes in another map; maybe using m2m_changed signal
     direct_successors = ManyToManyField(
         to='self',
         symmetrical=False,
