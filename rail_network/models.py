@@ -2,8 +2,10 @@ from django.db.models import (Model,
                               CharField,
                               DateTimeField,
                               IntegerField,
+                              FloatField,
                               ForeignKey,
                               OneToOneField,
+                              ManyToManyField,
                               CASCADE)
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
@@ -32,7 +34,7 @@ class Map(AbstractModel):
         null=True, blank=True,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.title:
             return self.title
         return _("Map ID %(id)s") % {'id': self.pk}
@@ -56,10 +58,46 @@ class Node(AbstractModel):
     pos_v = IntegerField(
         verbose_name=_("Vertical Position"),
     )
+    direct_successors = ManyToManyField(
+        to='self',
+        symmetrical=False,
+        through='Link',
+        through_fields=('tail', 'head'),
+        related_name='direct_predecessors',
+        related_query_name='direct_predecessor',
+        verbose_name=_("Nodes linked to"),
+    )
 
     class Meta:
         verbose_name = _("Node")
         verbose_name_plural = _("Nodes")
+
+
+class Link(AbstractModel):
+    tail = ForeignKey(
+        to=Node,
+        on_delete=CASCADE,
+        related_name='outgoing_links',
+        related_query_name='outgoing_link',
+        verbose_name=_('"from"-Node')
+    )
+    head = ForeignKey(
+        to=Node,
+        on_delete=CASCADE,
+        related_name='incoming_links',
+        related_query_name='incoming_link',
+        verbose_name=_('"to"-Node')
+    )
+    cost = FloatField(
+        verbose_name=_("Cost"),
+    )
+
+    def __str__(self) -> str:
+        return f"[{self.tail}] -> [{self.head}]"
+
+    class Meta:
+        verbose_name = _("Link")
+        verbose_name_plural = _("Links")
 
 
 class City(AbstractModel):
@@ -74,7 +112,7 @@ class City(AbstractModel):
         null=True, blank=True,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.name:
             return self.name
         return _("City Node ID %(id)s") % {'id': self.node_id}
