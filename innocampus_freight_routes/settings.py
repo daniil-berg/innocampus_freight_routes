@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'rail_network',
     'users',
     'django.contrib.admin',
     'django.contrib.auth',
