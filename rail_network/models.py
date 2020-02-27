@@ -6,7 +6,8 @@ from django.db.models import (Model,
                               ForeignKey,
                               OneToOneField,
                               ManyToManyField,
-                              CASCADE)
+                              CASCADE,
+                              UniqueConstraint)
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
@@ -69,6 +70,9 @@ class Node(AbstractModel):
     )
 
     class Meta:
+        constraints = [
+            UniqueConstraint(fields=['map', 'pos_h', 'pos_v'], name='exclusive_position'),
+        ]
         verbose_name = _("Node")
         verbose_name_plural = _("Nodes")
 
