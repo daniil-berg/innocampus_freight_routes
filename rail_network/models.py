@@ -92,8 +92,8 @@ class Link(AbstractModel):
         related_query_name='incoming_link',
         verbose_name=_('"to"-Node')
     )
-    cost = FloatField(
-        verbose_name=_("Cost"),
+    distance = FloatField(
+        verbose_name=_("Distance"),
     )
 
     def __str__(self) -> str:
