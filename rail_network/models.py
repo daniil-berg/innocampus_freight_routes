@@ -41,8 +41,13 @@ class Map(AbstractModel):
         return _("Map ID %(id)s") % {'id': self.pk}
 
     @property
-    def adjacency_matrix(self):
-        return
+    def adjacency_map(self):
+        m = {}
+        for node in self.nodes.all():
+            m[node.pk] = {}
+            for link in node.outgoing_links.all():
+                m[node.pk][link.head_id] = link.distance
+        return m
 
     class Meta:
         verbose_name = _("Map")
