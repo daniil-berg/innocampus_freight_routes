@@ -59,22 +59,20 @@ class LinkedList(MutableSequence):
 
     def insert(self, idx: int, data: Any) -> None:
         self._validate_idx(idx, append_flag=True)
+        if idx == self.__length:
+            self.append(data)
+            return
         previous_node = None
         next_node = self.__start
         for i in range(idx):
             previous_node = next_node
-            if i < self.__length:
-                next_node = next_node.next
-        if idx == self.__length:
-            next_node = None
+            next_node = next_node.next
         new_node = self.Node(data=data, links_to=next_node)
         if previous_node is None:
             self.__start = new_node
         else:
             previous_node.next = new_node
         self.__length += 1
-        if idx == self.__length:
-            self.__last_node = new_node
 
     def append(self, data: Any) -> None:
         new_node = self.Node(data=data)
@@ -105,9 +103,9 @@ if __name__ == '__main__':
     mylist.append(1)
     mylist.append('a')
     mylist.insert(1, 'B')
-    print(str(mylist))
-    print(repr(mylist))
+    print(mylist)
     mylist[2] = 'test'
+    print(mylist)
     otherlist = LinkedList()
     otherlist.append('c')
     otherlist.append('d')
