@@ -31,6 +31,8 @@ class ImmutableChain(Sequence):
             raise IndexError
     
     def __getitem__(self, idx: int) -> Any:
+        if idx == -1:
+            return self._last_node.data
         self._validate_idx(idx)
         next_node = self._start
         for _ in range(idx):
@@ -126,4 +128,7 @@ if __name__ == '__main__':
     q.put(2)
     q.put(5)
     q.put(3)
+    q.put(3)
     print(q)
+    print(q.index(2))
+    print(q[-1])
