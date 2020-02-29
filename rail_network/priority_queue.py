@@ -1,39 +1,98 @@
-from typing import Any
+from typing import Any, Iterable
 from collections.abc import MutableSequence
 
 
-class LinkedListNode:
-    def __init__(self, data: Any, links_to: 'LinkedListNode' = None):
-        self.data = data
-        self.next = links_to
-
-
 class LinkedList(MutableSequence):
-    def __init__(self, start: LinkedListNode = None):
-        if not isinstance(start, LinkedListNode):
-            raise TypeError
-        self.start = start
+    class Node:
+        def __init__(self, data: Any, links_to: 'LinkedList.Node' = None):
+            self.data = data
+            self.next = links_to
+
+    def __init__(self):
+        self.__start = None
+        self.__length = 0
+
+    def __repr__(self) -> str:
+        s = '['
+        next_node = self.__start
+        for _ in range(self.__length):
+            s += repr(next_node.data) + ', '
+            next_node = next_node.next
+        s = s[:-2] + ']'
+        return s
 
     def __len__(self) -> int:
-        if not self.start:
-            return 0
-        length = 1
-        next_node = self.start.next
-        while next_node is not None:
-            if next_node == self.start:
-                raise AttributeError("Cycle found!")
-            length += 1
-            next_node = next_node.next
-        return length
+        return self.__length
 
-    def __getitem__(self, item: int) -> LinkedListNode:
-        if self.__len__() - 1 < item:
+    def _validate_idx(self, idx: int, append_flag: bool = False) -> None:
+        if idx > self.__length - (not append_flag) or idx < 0:
             raise IndexError
-        if item == 0:
-            return self.start
-        next_node = self.start.next
-        if item == 1:
-            return next_node
-        for _ in range(item - 1):
+
+    def __getitem__(self, idx: int) -> Any:
+        self._validate_idx(idx)
+        next_node = self.__start
+        for _ in range(idx):
             next_node = next_node.next
-        return next_node
+        return next_node.data
+
+    def __setitem__(self, idx: int, data: Any) -> None:
+        self._validate_idx(idx, append_flag=True)
+        current_node = self.__start
+        for _ in range(idx):
+            if current_node.next is not None:
+                current_node = current_node.next
+        if idx == self.__length:
+            current_node.next = self.Node(data=data)
+        else:
+            current_node.data = data
+
+    def __delitem__(self, idx: int) -> None:
+        self._validate_idx(idx)
+        previous_node = None
+        current_node = self.__start
+        for _ in range(idx):
+            previous_node = current_node
+            current_node = current_node.next
+        if previous_node is not None:
+            previous_node.next = current_node.next
+        self.__length -= 1
+
+    def insert(self, idx: int, data: Any) -> None:
+        self._validate_idx(idx, append_flag=True)
+        previous_node = None
+        next_node = self.__start
+        for i in range(idx):
+            previous_node = next_node
+            if i < self.__length:
+                next_node = next_node.next
+        if idx == self.__length:
+            next_node = None
+        new_node = self.Node(data=data, links_to=next_node)
+        if previous_node is None:
+            self.__start = new_node
+        else:
+            previous_node.next = new_node
+        self.__length += 1
+
+    def extend(self, iterable: Iterable[Any]) -> None:
+        if isinstance(iterable, LinkedList):
+            iterable = tuple(iterable)
+        super().extend(iterable)
+
+
+if __name__ == '__main__':
+    mylist = LinkedList()
+    mylist.append(1)
+    mylist.append('a')
+    mylist.insert(1, 'B')
+    print(str(mylist))
+    print(repr(mylist))
+    otherlist = LinkedList()
+    otherlist.append('c')
+    otherlist.append('d')
+    mylist.extend(otherlist)
+    print(mylist)
+    mylist.extend(['e', 'f'])
+    print(mylist)
+    mylist.extend(mylist)
+    print(mylist)
