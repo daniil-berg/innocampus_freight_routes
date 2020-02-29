@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block content %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'rail_network/map.css' %}">
+{% endblock css %}
+
+{% block main %}
     <canvas id="map">
 
     </canvas>
-{% endblock content %}
+{% endblock main %}
