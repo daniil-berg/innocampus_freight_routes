@@ -8,18 +8,19 @@ class ImmutableChain(Sequence):
             self.data = data
             self.next = links_to
 
-    def __init__(self):
+    def __init__(self, repr_sep: str = ' -> '):
         self._start = None
         self._length = 0
         self._last_node = None
+        self._repr_sep = repr_sep
 
     def __repr__(self) -> str:
-        s = '['
+        s = '('
         next_node = self._start
         for _ in range(self._length):
-            s += repr(next_node.data) + ', '
+            s += repr(next_node.data) + self._repr_sep
             next_node = next_node.next
-        s = s[:-2] + ']'
+        s = s[:-len(self._repr_sep)] + ')'
         return s
 
     def __len__(self) -> int:
@@ -92,31 +93,37 @@ class LinkedList(ImmutableChain, MutableSequence):
         super().extend(iterable)
 
 
-class PriorityQueue(LinkedList):
-    def __init__(self, cmp_attr: str = None):
-        super().__init__()
+class PriorityQueue(ImmutableChain):
+    def __init__(self, cmp_attr: str = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.__cmp_attr = cmp_attr
 
-    def insert(self, idx: int, data: Any) -> None:
-        pass
+    def priority_higher(self, of: Any, than: Any) -> bool:
+        if self.__cmp_attr is None:
+            return of > than
+        if not (hasattr(of, self.__cmp_attr) and hasattr(than, self.__cmp_attr)):
+            raise AttributeError
+        return getattr(of, self.__cmp_attr) > getattr(than, self.__cmp_attr)
+
+    def put(self, obj: Any) -> None:
+        previous_node = None
+        next_node = self._start
+        while next_node is not None and not self.priority_higher(obj, next_node.data):
+            previous_node = next_node
+            next_node = next_node.next
+        new_node = self.Node(data=obj, links_to=next_node)
+        if previous_node is None:
+            self._start = new_node
+        else:
+            previous_node.next = new_node
+        self._length += 1
+        if next_node is None:
+            self._last_node = new_node
 
 
 if __name__ == '__main__':
-    mylist = LinkedList()
-    mylist.append(1)
-    mylist.append('a')
-    mylist.insert(1, 'B')
-    print(mylist)
-    mylist[2] = 'test'
-    print(mylist)
-    otherlist = LinkedList()
-    otherlist.append('c')
-    otherlist.append('d')
-    mylist.extend(otherlist)
-    print(mylist)
-    mylist.extend(['e', 'f'])
-    print(mylist)
-    mylist.extend(mylist)
-    print(mylist)
-    mylist[5] = 18
-    print(mylist)
+    q = PriorityQueue()
+    q.put(2)
+    q.put(5)
+    q.put(3)
+    print(q)
