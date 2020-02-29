@@ -6,7 +6,9 @@
 {% endblock css %}
 
 {% block main %}
-    <canvas id="map">
-
-    </canvas>
+    <canvas id="map-graph"></canvas>
 {% endblock main %}
+
+{% block js %}
+    <script type="text/javascript" src="{% static 'rail_network/map.js' %}"></script>
+{% endblock js %}
