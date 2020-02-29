@@ -60,6 +60,15 @@ class LinkedList(ImmutableChain, MutableSequence):
             previous_node.next = current_node.next
         self._length -= 1
 
+    def append(self, data: Any) -> None:
+        new_node = self.Node(data=data)
+        if self._length == 0:
+            self._start = new_node
+        else:
+            self._last_node.next = new_node
+        self._length += 1
+        self._last_node = new_node
+
     def insert(self, idx: int, data: Any) -> None:
         self._validate_idx(idx, append_flag=True)
         if idx == self._length:
@@ -76,15 +85,6 @@ class LinkedList(ImmutableChain, MutableSequence):
         else:
             previous_node.next = new_node
         self._length += 1
-
-    def append(self, data: Any) -> None:
-        new_node = self.Node(data=data)
-        if self._length == 0:
-            self._start = new_node
-        else:
-            self._last_node.next = new_node
-        self._length += 1
-        self._last_node = new_node
 
     def extend(self, iterable: Iterable[Any]) -> None:
         if isinstance(iterable, LinkedList):
