@@ -14,6 +14,12 @@ const link_dist_form_class = 'link-dist-form';
 const link_dist_input_class = 'link-dist-input';
 const confirm_link_dist_btn_class = 'confirm-link-dist';
 
+const node_options_div_class = 'node-options';
+const node_rename_form_class = 'node-rename-form';
+const node_rename_input_class = 'node-rename-input';
+const confirm_node_rename_btn_class = 'confirm-node-rename';
+const delete_node_btn_class = 'node-delete';
+
 const node_default_style = {
   'background-color': '#666',
   'border-width': '0px',
@@ -62,27 +68,28 @@ let cy = cytoscape({
 
 cy.on('tap', function(event){
   let target = event.target;
-  if( target === cy ){
-    if (add_node_mode === true){
+  if (target === cy) {
+    if (add_node_mode === true) {
       new_node = place_node(event.position.x, event.position.y);
       add_node_mode = false;
       show_city_name_input(new_node);
     }
-  } else {
-
+    destroy_node_options();
   }
 });
 
 cy.on('tap', 'node', function (event) {
-  let target = event.target;
+  let node = event.target;
   if (add_link_mode === true) {
     if (new_link_start) {
-      let link = create_link(target);
+      let link = create_link(node);
       show_link_dist_input(link);
     } else {
-      target.style(node_highlight_style);
-      new_link_start = target;
+      node.style(node_highlight_style);
+      new_link_start = node;
     }
+  } else {
+    open_node_options(node);
   }
 });
 
@@ -236,5 +243,51 @@ function destroy_link_dist_input() {
   let city_name_form = document.getElementsByClassName(link_dist_form_class)[0];
   if (city_name_form) {
     city_name_form.remove();
+  }
+}
+
+function open_node_options(node) {
+  let options_div = document.createElement('div');
+  options_div.classList.add(node_options_div_class);
+  options_div.style.position = 'fixed';
+  options_div.style.top = `${node.renderedPosition().y}px`;
+  options_div.style.left = `${node.renderedPosition().x + 20}px`;
+  let name_change_form = document.createElement('div');
+  name_change_form.classList.add(node_rename_form_class);
+  let input_field = document.createElement('input');
+  input_field.classList.add(node_rename_input_class);
+  name_change_form.appendChild(input_field);
+  let confirm_btn = document.createElement('button');
+  confirm_btn.innerHTML = "Rename";
+  confirm_btn.classList.add(confirm_node_rename_btn_class);
+  confirm_btn.setAttribute('onclick', `change_city_name('${node.id()}')`);
+  name_change_form.appendChild(confirm_btn);
+  options_div.appendChild(name_change_form);
+  let delete_btn = document.createElement('button');
+  delete_btn.innerHTML = "Delete";
+  delete_btn.classList.add(delete_node_btn_class);
+  delete_btn.setAttribute('onclick', `delete_node('${node.id()}')`);
+  name_change_form.appendChild(delete_btn);
+  document.getElementsByTagName('main')[0].appendChild(options_div);
+  input_field.focus();
+}
+
+function change_city_name(node_id) {
+  let input_value = document.getElementsByClassName(node_rename_input_class)[0].value;
+  let node = cy.getElementById(node_id);
+  node.data('label', input_value);
+  destroy_node_options();
+}
+
+function delete_node(node_id) {
+  let node = cy.getElementById(node_id);
+  node.remove();
+  destroy_node_options();
+}
+
+function destroy_node_options() {
+  let options_div = document.getElementsByClassName(node_options_div_class)[0];
+  if (options_div) {
+    options_div.remove();
   }
 }
