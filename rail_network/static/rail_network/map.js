@@ -77,6 +77,7 @@ function show_city_name_input(x, y, node_id) {
   confirm_btn.setAttribute('onclick', `confirm_city_name('${node_id}')`);
   input_form.appendChild(confirm_btn);
   document.getElementsByTagName('main')[0].appendChild(input_form);
+  input_field.focus();
 }
 
 function confirm_city_name(node_id) {
