@@ -17,4 +17,13 @@ button {
 
 button:hover {
     background: #0015da;
+    cursor: pointer;
+}
+
+button:disabled {
+    background: #484848;
+}
+
+button:disabled {
+    cursor: default;
 }

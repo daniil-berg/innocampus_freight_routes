@@ -17,7 +17,7 @@ canvas {
     background: rgb(216, 238, 255);
 }
 
-button#add-city {
+#actions {
     position: fixed;
     top: 10px;
     left: 10px;
@@ -44,6 +44,23 @@ button.cancel:hover {
 }
 
 button.confirm-city-name {
+    padding: 0 10px;
+    height: 100%;
+    border-radius: 0;
+}
+
+.link-dist-form {
+    height: 30px;
+    display: flex;
+}
+
+.link-dist-input {
+    height: 100%;
+    width: 50px;
+    border: none;
+}
+
+button.confirm-link-dist {
     padding: 0 10px;
     height: 100%;
     border-radius: 0;
