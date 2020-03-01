@@ -6,9 +6,15 @@
 {% endblock css %}
 
 {% block main %}
-    <canvas id="map-graph" width="800" height="600"></canvas>
+    <div id="map"></div>
+    <button id="add-city">Add city</button>
+{#    <canvas id="map-graph" width="800" height="600"></canvas>#}
 {% endblock main %}
 
 {% block js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.14.0/cytoscape.min.js"
+            integrity="sha256-rI7zH7xDqO306nxvXUw9gqkeBpvvmddDdlXJjJM7rEM="
+            crossorigin="anonymous">
+    </script>
     <script type="text/javascript" src="{% static 'rail_network/map.js' %}"></script>
 {% endblock js %}

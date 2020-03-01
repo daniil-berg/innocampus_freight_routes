@@ -1,12 +1,90 @@
-document.addEventListener("DOMContentLoaded", function(event) {
-  let canvas = document.getElementById('map-graph');
-  if (canvas.getContext) {
-    let ctx = canvas.getContext("2d");
+const add_city_btn = document.getElementById('add-city');
+const city_name_form_class = 'city-name-form';
+const city_name_input_class = 'city-name-input';
+const confirm_city_name_btn_class = 'confirm-city-name';
+let add_mode = false;
 
-    ctx.fillStyle = "rgb(200,0,0)";
-    ctx.fillRect(10, 10, 55, 50);
-
-    ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
-    ctx.fillRect(30, 30, 55, 50);
+let cy = cytoscape({
+  container: document.getElementById('map'), // container to render in
+  elements: [],
+  style: [
+    {
+      selector: 'node',
+      style: {
+        'background-color': '#666',
+        'label': 'data(label)'
+      }
+    },
+    {
+      selector: 'edge',
+      style: {
+        'width': 3,
+        'line-color': '#ccc',
+        'target-arrow-color': '#ccc',
+        'target-arrow-shape': 'triangle'
+      }
+    }
+  ],
+  layout: {
+    name: 'grid',
+    rows: 1
   }
 });
+
+add_city_btn.addEventListener('click', function () {
+  add_mode = true
+}, false);
+
+cy.on('tap', function(event){
+  let target = event.target;
+
+  if( target === cy ){
+    console.log('tap on background');
+    if (add_mode === true){
+      let new_node_id = place_node(event.position.x, event.position.y);
+      add_mode = false;
+      show_city_name_input(event.position.x, event.position.y, new_node_id);
+    }
+  } else {
+    console.log('tap on some element');
+  }
+});
+
+function place_node(x, y) {
+  let new_node = cy.add({
+    group: 'nodes',
+    data: {label: 'New city'},
+    position: { x: x, y: y }
+  });
+  return new_node.data('id');
+}
+
+function show_city_name_input(x, y, node_id) {
+  let input_form = document.createElement('span');
+  input_form.classList.add(city_name_form_class);
+  input_form.style.position = 'fixed';
+  input_form.style.top = `${y}px`;
+  input_form.style.left = `${x + 20}px`;
+  let input_field = document.createElement('input');
+  input_field.classList.add(city_name_input_class);
+  input_form.appendChild(input_field);
+  let confirm_btn = document.createElement('button');
+  confirm_btn.innerHTML = "Add";
+  confirm_btn.classList.add(confirm_city_name_btn_class);
+  confirm_btn.setAttribute('onclick', `confirm_city_name('${node_id}')`);
+  input_form.appendChild(confirm_btn);
+  document.getElementsByTagName('main')[0].appendChild(input_form);
+}
+
+function confirm_city_name(node_id) {
+  let input_value = document.getElementsByClassName(city_name_input_class)[0].value;
+  console.log(input_value);
+  let node = cy.getElementById(node_id);
+  node.data('label', input_value);
+  destroy_city_name_input();
+}
+
+function destroy_city_name_input() {
+  let city_name_form = document.getElementsByClassName(city_name_form_class)[0];
+  city_name_form.remove();
+}
