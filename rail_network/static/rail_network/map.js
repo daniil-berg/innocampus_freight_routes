@@ -6,6 +6,7 @@ const city_name_form_class = 'city-name-form';
 const city_name_input_class = 'city-name-input';
 const confirm_city_name_btn_class = 'confirm-city-name';
 let add_mode = false;
+let new_node = null;
 
 let cy = cytoscape({
   container: document.getElementById('map'), // container to render in
@@ -38,28 +39,36 @@ cy.on('tap', function(event){
   let target = event.target;
   if( target === cy ){
     if (add_mode === true){
-      let new_node_id = place_node(event.position.x, event.position.y);
+      new_node = place_node(event.position.x, event.position.y);
       add_mode = false;
-      show_city_name_input(event.position.x, event.position.y, new_node_id);
+      show_city_name_input(event.position.x, event.position.y, new_node.data('id'));
     }
   } else {
 
   }
 });
 
+add_city_btn.addEventListener('click', add_city_btn_click, false);
+
 function add_city_btn_click() {
-  add_mode = true;
-  add_city_btn.innerText = cancel_btn_text;
-  add_city_btn.setAttribute('class', cancel_btn_class);
+  if (add_mode === false) {
+    add_mode = true;
+    add_city_btn.innerText = cancel_btn_text;
+    add_city_btn.setAttribute('class', cancel_btn_class);
+  } else {
+    cancel_add_mode();
+    if (new_node !== null) {
+      new_node.remove();
+    }
+  }
 }
 
 function place_node(x, y) {
-  let new_node = cy.add({
+  return cy.add({
     group: 'nodes',
     data: {label: 'New city'},
     position: { x: x, y: y }
   });
-  return new_node.data('id');
 }
 
 function show_city_name_input(x, y, node_id) {
@@ -85,12 +94,20 @@ function confirm_city_name(node_id) {
   console.log(input_value);
   let node = cy.getElementById(node_id);
   node.data('label', input_value);
-  destroy_city_name_input();
+  cancel_add_mode();
+  new_node = null;
+}
+
+function cancel_add_mode() {
+  add_mode = false;
   add_city_btn.innerText = add_city_btn_text;
   add_city_btn.removeAttribute('class');
+  destroy_city_name_input();
 }
 
 function destroy_city_name_input() {
   let city_name_form = document.getElementsByClassName(city_name_form_class)[0];
-  city_name_form.remove();
+  if (city_name_form) {
+    city_name_form.remove();
+  }
 }
