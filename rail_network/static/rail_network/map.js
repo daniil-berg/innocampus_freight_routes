@@ -1,4 +1,7 @@
 const add_city_btn = document.getElementById('add-city');
+const add_city_btn_text = 'Add city';
+const cancel_btn_class = 'cancel';
+const cancel_btn_text = 'Cancel';
 const city_name_form_class = 'city-name-form';
 const city_name_input_class = 'city-name-input';
 const confirm_city_name_btn_class = 'confirm-city-name';
@@ -31,24 +34,24 @@ let cy = cytoscape({
   }
 });
 
-add_city_btn.addEventListener('click', function () {
-  add_mode = true
-}, false);
-
 cy.on('tap', function(event){
   let target = event.target;
-
   if( target === cy ){
-    console.log('tap on background');
     if (add_mode === true){
       let new_node_id = place_node(event.position.x, event.position.y);
       add_mode = false;
       show_city_name_input(event.position.x, event.position.y, new_node_id);
     }
   } else {
-    console.log('tap on some element');
+
   }
 });
+
+function add_city_btn_click() {
+  add_mode = true;
+  add_city_btn.innerText = cancel_btn_text;
+  add_city_btn.setAttribute('class', cancel_btn_class);
+}
 
 function place_node(x, y) {
   let new_node = cy.add({
@@ -60,7 +63,7 @@ function place_node(x, y) {
 }
 
 function show_city_name_input(x, y, node_id) {
-  let input_form = document.createElement('span');
+  let input_form = document.createElement('div');
   input_form.classList.add(city_name_form_class);
   input_form.style.position = 'fixed';
   input_form.style.top = `${y}px`;
@@ -82,6 +85,8 @@ function confirm_city_name(node_id) {
   let node = cy.getElementById(node_id);
   node.data('label', input_value);
   destroy_city_name_input();
+  add_city_btn.innerText = add_city_btn_text;
+  add_city_btn.removeAttribute('class');
 }
 
 function destroy_city_name_input() {
