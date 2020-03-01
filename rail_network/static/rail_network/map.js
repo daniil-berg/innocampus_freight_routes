@@ -33,7 +33,7 @@ let new_link = null;
 let new_link_start = null;
 
 let cy = cytoscape({
-  container: document.getElementById('map'), // container to render in
+  container: document.getElementById('map'),
   elements: [
     // {data: { id: 'a' }},
     // {data: { id: 'b' }}
@@ -191,7 +191,7 @@ function create_link(end_node) {
       data: {
         source: new_link_start.data('id'),
         target: end_node.data('id'),
-        label: 'New route',
+        label: 'Dist.',
       },
     });
   }
