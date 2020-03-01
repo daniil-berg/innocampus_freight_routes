@@ -34,7 +34,10 @@ let new_link_start = null;
 
 let cy = cytoscape({
   container: document.getElementById('map'), // container to render in
-  elements: [{data: { id: 'a' }},{data: { id: 'b' }}],
+  elements: [
+    // {data: { id: 'a' }},
+    // {data: { id: 'b' }}
+  ],
   style: [
     {
       selector: 'node',
@@ -63,7 +66,7 @@ cy.on('tap', function(event){
     if (add_node_mode === true){
       new_node = place_node(event.position.x, event.position.y);
       add_node_mode = false;
-      show_city_name_input(event.position.x, event.position.y, new_node.data('id'));
+      show_city_name_input(new_node);
     }
   } else {
 
@@ -127,19 +130,19 @@ function place_node(x, y) {
   });
 }
 
-function show_city_name_input(x, y, node_id) {
+function show_city_name_input(node) {
   let input_form = document.createElement('div');
   input_form.classList.add(city_name_form_class);
   input_form.style.position = 'fixed';
-  input_form.style.top = `${y}px`;
-  input_form.style.left = `${x + 20}px`;
+  input_form.style.top = `${node.renderedPosition().y}px`;
+  input_form.style.left = `${node.renderedPosition().x + 20}px`;
   let input_field = document.createElement('input');
   input_field.classList.add(city_name_input_class);
   input_form.appendChild(input_field);
   let confirm_btn = document.createElement('button');
   confirm_btn.innerHTML = "Add";
   confirm_btn.classList.add(confirm_city_name_btn_class);
-  confirm_btn.setAttribute('onclick', `confirm_city_name('${node_id}')`);
+  confirm_btn.setAttribute('onclick', `confirm_city_name('${node.id()}')`);
   input_form.appendChild(confirm_btn);
   document.getElementsByTagName('main')[0].appendChild(input_form);
   input_field.focus();
