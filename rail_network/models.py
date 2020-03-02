@@ -1,3 +1,5 @@
+from typing import Union, Tuple
+
 from django.db.models import (Model,
                               CharField,
                               DateTimeField,
@@ -8,6 +10,7 @@ from django.db.models import (Model,
                               ManyToManyField,
                               CASCADE,
                               UniqueConstraint)
+from django.db.models.manager import Manager
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 
@@ -28,6 +31,7 @@ class Map(AbstractModel):
         related_query_name='map',
         verbose_name=_("User"),
         editable=False,
+        null=True, blank=True,
     )
     title = CharField(
         max_length=255,
@@ -39,6 +43,10 @@ class Map(AbstractModel):
         if self.title:
             return self.title
         return _("Map ID %(id)s") % {'id': self.pk}
+
+    @property
+    def city_nodes_names(self):
+        return dict(self.nodes.filter(city__isnull=False).values_list('id', 'city__name'))
 
     @property
     def adjacency_map(self):
@@ -90,6 +98,18 @@ class Node(AbstractModel):
         verbose_name=_("Nodes linked to"),
     )
 
+    def link_to(self, head: Union[int, 'Node'], distance: float) -> 'Link':
+        if not isinstance(head, Node):
+            head = Node.objects.get(pk=head)
+        return Link.objects.create(tail=self, head=head, distance=distance)
+
+    def link_with(self, head: Union[int, 'Node'], distance: float) -> Tuple['Link', 'Link']:
+        if not isinstance(head, Node):
+            head = Node.objects.get(pk=head)
+        link_to = Link.objects.create(tail=self, head=head, distance=distance)
+        link_from = Link.objects.create(tail=head, head=self, distance=distance)
+        return link_to, link_from
+
     class Meta:
         constraints = [
             UniqueConstraint(fields=['map', 'pos_h', 'pos_v'], name='exclusive_position'),
@@ -125,6 +145,12 @@ class Link(AbstractModel):
         verbose_name_plural = _("Links")
 
 
+class CityManager(Manager):
+    def create_city_node(self, map_id: int, pos_v: int, pos_h: int, name: str):
+        node = Node.objects.create(map_id=map_id, pos_v=pos_v, pos_h=pos_h)
+        return super().create(node=node, name=name)
+
+
 class City(AbstractModel):
     node = OneToOneField(
         to=Node,
@@ -141,6 +167,14 @@ class City(AbstractModel):
         if self.name:
             return self.name
         return _("City Node ID %(id)s") % {'id': self.node_id}
+
+    def link_to(self, head: Union[int, 'Node'], distance: float) -> 'Link':
+        return self.node.link_to(head=head, distance=distance)
+
+    def link_with(self, head: Union[int, 'Node'], distance: float) -> Tuple['Link', 'Link']:
+        return self.node.link_with(head=head, distance=distance)
+
+    objects = CityManager()
 
     class Meta:
         verbose_name = _("City")
