@@ -1,4 +1,5 @@
-from typing import Union, Tuple
+from typing import Optional, Union, Tuple, Dict
+from math import inf
 
 from django.db.models import (Model,
                               CharField,
@@ -13,6 +14,8 @@ from django.db.models import (Model,
 from django.db.models.manager import Manager
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+
+from .priority_queue import PriorityQueue
 
 
 class AbstractModel(Model):
@@ -86,6 +89,51 @@ class Map(AbstractModel):
                 links.append((rev_map[link.tail.pk], idx))
                 distances.append(link.distance)
         return node_list, links, distances
+
+    def dijkstra(self, start: Union[int, 'Node'], sum_costs: bool = True, unreachable_dist: float = inf
+                 ) -> Tuple[Dict[int, float], Dict[int, Optional[int]]]:
+        """
+        Determines shortest paths to all nodes from a specified starting node.
+        Implementation of Dijkstra's algorithm.
+
+        Args:
+            start: Starting node
+            sum_costs: If True, distances across edges are summed;
+                       if False, path distance will be equal to maximum link distance in path.
+            unreachable_dist: Value to be assigned when a node is unreachable from s
+
+        Returns:
+            2-tuple of dictionaries;
+                dist - every key is a node id, every value is the minimum distance to that node from start
+                pred - every key is a node id, every value is the predecessor node's id on the shortest path from start
+        """
+        if not isinstance(start, Node):
+            start = Node.objects.get(pk=start)
+        dist, pred = {}, {}
+        for node in self.nodes.all():
+            dist[node.pk] = unreachable_dist
+            pred[node.pk] = None
+        dist[start.pk] = 0
+        priority_q = PriorityQueue()
+        priority_q[start] = 0
+        while priority_q:
+            # Consider next node v in the queue
+            v: Node = priority_q.next()[0]
+
+            # Iterate through each outgoing link of node v
+            for link in Link.objects.filter(tail=v):
+                # Calculate alternate distance to head
+                # either as the sum of link distances or als maximum link distance on the path
+                alt_dist = dist[v.pk] + link.distance if sum_costs else max(dist[v.pk], link.distance)
+
+                # If currently minimal distance to link head is greater than
+                # the minimal distance to v plus the link distance
+                if dist[link.head.pk] == -1 or dist[link.head.pk] > alt_dist:
+                    dist[link.head.pk] = alt_dist
+                    pred[link.head.pk] = v.pk
+                    if link.head.pk not in priority_q:
+                        priority_q[link.head] = dist[link.head.pk]
+        return dist, pred
 
     class Meta:
         verbose_name = _("Map")

@@ -1,134 +1,106 @@
-from typing import Any, Iterable
-from collections.abc import Sequence, MutableSequence
+from typing import TypeVar, List, Tuple, Optional
+from collections.abc import MutableMapping
+from math import inf
 
 
-class ImmutableChain(Sequence):
-    class Node:
-        def __init__(self, data: Any, links_to: 'ImmutableChain.Node' = None):
-            self.data = data
-            self.next = links_to
-
-    def __init__(self, repr_sep: str = ' -> '):
-        self._start = None
-        self._length = 0
-        self._last_node = None
-        self._repr_sep = repr_sep
-
-    def __repr__(self) -> str:
-        s = '('
-        next_node = self._start
-        for _ in range(self._length):
-            s += repr(next_node.data) + self._repr_sep
-            next_node = next_node.next
-        s = s[:-len(self._repr_sep)] + ')'
-        return s
-
-    def __len__(self) -> int:
-        return self._length
-
-    def _validate_idx(self, idx: int, append_flag: bool = False) -> None:
-        if idx > self._length - (not append_flag) or idx < 0:
-            raise IndexError
-    
-    def __getitem__(self, idx: int) -> Any:
-        if idx == -1:
-            return self._last_node.data
-        self._validate_idx(idx)
-        next_node = self._start
-        for _ in range(idx):
-            next_node = next_node.next
-        return next_node.data
+AnyNumeric = TypeVar('AnyNumeric', int, float)
 
 
-class LinkedList(ImmutableChain, MutableSequence):
+class PriorityQueue(MutableMapping):
+    """
+    PriorityQueue implemented as a sort of mix between sequence and mapping.
+    Container for 2-tuples of key-object and corresponding value.
+    Always sorted by value.
+    """
+    # TODO: Use https://github.com/DanielStutzbach/heapdict instead! list.insert() is extremely inefficient
 
-    def __setitem__(self, idx: int, data: Any) -> None:
-        if idx == self._length - 1:
-            self._last_node.data = data
-        else:
-            self._validate_idx(idx)
-            current_node = self._start
-            for _ in range(idx):
-                current_node = current_node.next
-            current_node.data = data
+    def __init__(self):
+        """Priority Queue instances are initialized empty."""
+        self.__queue = []
 
-    def __delitem__(self, idx: int) -> None:
-        self._validate_idx(idx)
-        previous_node = None
-        current_node = self._start
-        for _ in range(idx):
-            previous_node = current_node
-            current_node = current_node.next
-        if previous_node is not None:
-            previous_node.next = current_node.next
-        self._length -= 1
+    def __repr__(self):
+        return repr(self.__queue)
 
-    def append(self, data: Any) -> None:
-        new_node = self.Node(data=data)
-        if self._length == 0:
-            self._start = new_node
-        else:
-            self._last_node.next = new_node
-        self._length += 1
-        self._last_node = new_node
+    def __getitem__(self, item):
+        """Emulates dict-like access to item-values"""
+        for key, value in self.__queue:
+            if key == item:
+                return value
+        raise KeyError
 
-    def insert(self, idx: int, data: Any) -> None:
-        self._validate_idx(idx, append_flag=True)
-        if idx == self._length:
-            self.append(data)
+    def pos(self, item, get_value=False):
+        """Returns position of item in queue and optionally its value."""
+        for idx, (key, value) in enumerate(self.__queue):
+            if key == item:
+                return idx, value if get_value else idx
+        raise KeyError
+
+    def __bin_ins(self, start: int, stop: int, key, value):
+        """Recursive binary insert of new key-value-pairs into queue to maintain order"""
+        if stop - start == 0:
+            # Queue sub-section is empty
+            self.__queue.insert(start, (key, value))
             return
-        previous_node = None
-        next_node = self._start
-        for i in range(idx):
-            previous_node = next_node
-            next_node = next_node.next
-        new_node = self.Node(data=data, links_to=next_node)
-        if previous_node is None:
-            self._start = new_node
+        elif stop - start == 1:
+            # Only one element in queue sub-section
+            # Insert new element accordingly
+            if value < self.__queue[start][1]:
+                self.__queue.insert(start, (key, value))
+            else:
+                self.__queue.insert(stop, (key, value))
+            return
+
+        middle = (start + stop) // 2
+        if value < self.__queue[middle][1]:
+            self.__bin_ins(start, middle, key, value)
         else:
-            previous_node.next = new_node
-        self._length += 1
+            self.__bin_ins(middle, stop, key, value)
+        return
 
-    def extend(self, iterable: Iterable[Any]) -> None:
-        if isinstance(iterable, LinkedList):
-            iterable = tuple(iterable)
-        super().extend(iterable)
+    def __setitem__(self, key, value):
+        """Emulates dict-like key-value-assignment; updates queue order if necessary"""
+        try:
+            current_pos, current_val = self.pos(key, get_value=True)
+        except KeyError:
+            current_pos, current_val = None, None
 
+        if current_pos:
+            if current_val == value:
+                return
+            else:
+                del self.__queue[current_pos]
+        self.__bin_ins(0, len(self.__queue), key, value)
 
-class PriorityQueue(ImmutableChain):
-    def __init__(self, cmp_attr: str = None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.__cmp_attr = cmp_attr
+    def __delitem__(self, key):
+        """Emulates dict-like key deletion"""
+        pos = self.pos(key)
+        assert isinstance(pos, int)
+        del self.__queue[pos]
 
-    def priority_higher(self, of: Any, than: Any) -> bool:
-        if self.__cmp_attr is None:
-            return of > than
-        if not (hasattr(of, self.__cmp_attr) and hasattr(than, self.__cmp_attr)):
-            raise AttributeError
-        return getattr(of, self.__cmp_attr) > getattr(than, self.__cmp_attr)
+    def __iter__(self):
+        """Generator iterator over keys"""
+        for key, _ in self.__queue:
+            yield key
 
-    def put(self, obj: Any) -> None:
-        previous_node = None
-        next_node = self._start
-        while next_node is not None and not self.priority_higher(obj, next_node.data):
-            previous_node = next_node
-            next_node = next_node.next
-        new_node = self.Node(data=obj, links_to=next_node)
-        if previous_node is None:
-            self._start = new_node
-        else:
-            previous_node.next = new_node
-        self._length += 1
-        if next_node is None:
-            self._last_node = new_node
+    def __len__(self):
+        return len(self.__queue)
 
+    def next(self):
+        """Pops item-value-pair with lowest value"""
+        return self.__queue.pop(0)
 
-if __name__ == '__main__':
-    q = PriorityQueue()
-    q.put(2)
-    q.put(5)
-    q.put(3)
-    q.put(3)
-    print(q)
-    print(q.index(2))
-    print(q[-1])
+    def keys(self):
+        return [key for key, _ in self.__queue]
+
+    def values(self):
+        return [value for _, value in self.__queue]
+
+    def items(self):
+        return self.__queue.copy()
+
+    def get(self, key, default=None):
+        """Emulates dict-like get method with default-fallback"""
+        try:
+            return self[key]
+        except KeyError:
+            return default
