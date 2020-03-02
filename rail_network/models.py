@@ -71,25 +71,6 @@ class Map(AbstractModel):
                 m[node.pk][link.pk] = (-1) * link.distance
         return m
 
-    def _node_list_and_reverse_map(self):
-        node_list, rev_map = [], {}
-        for idx, node in enumerate(self.nodes.all()):
-            node_list.append(node.pk)
-            rev_map[node.pk] = idx
-        return node_list, rev_map
-
-    def links_normalized(self):
-        node_list, rev_map = self._node_list_and_reverse_map()
-        links, distances = [], []
-        for idx, node in enumerate(node_list):
-            for link in node.outgoing_links.all():
-                links.append((idx, rev_map[link.head.pk]))
-                distances.append(link.distance)
-            for link in node.incoming_links.all():
-                links.append((rev_map[link.tail.pk], idx))
-                distances.append(link.distance)
-        return node_list, links, distances
-
     def dijkstra(self, start: Union[int, 'Node'], sum_costs: bool = True, unreachable_dist: float = inf
                  ) -> Tuple[Dict[int, float], Dict[int, Optional[int]]]:
         """
