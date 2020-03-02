@@ -20,8 +20,7 @@
             integrity="sha256-rI7zH7xDqO306nxvXUw9gqkeBpvvmddDdlXJjJM7rEM="
             crossorigin="anonymous">
     </script>
-    <script>
-        let graph_init_params = {{ graph_init_params }};
-    </script>
+    {{ init_nodes|json_script:"init-nodes" }}
+    {{ init_links|json_script:"init-links" }}
     <script type="text/javascript" src="{% static 'rail_network/map.js' %}"></script>
 {% endblock js %}

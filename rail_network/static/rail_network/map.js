@@ -39,74 +39,82 @@ let add_link_mode = false;
 let new_link = null;
 let new_link_start = null;
 
-let cy = cytoscape({
-  container: document.getElementById('map'),
-  elements: [
-    {group: 'nodes', data: {label: 'Testcity 1'}},
-    {group: 'nodes', data: {label: 'Testcity 2'}},
-    {group: 'nodes', data: {label: 'Testcity 3'}}
-  ],
-  style: [
-    {
-      selector: 'node',
-      style: node_default_style
-    },
-    {
-      selector: 'edge',
-      style: {
-        'width': 3,
-        'line-color': '#ccc',
-        'target-arrow-color': '#ccc',
-        'target-arrow-shape': 'triangle',
-        'label': `data(${link_dist_attr})`
+let cy = null;
+
+$(document).ready(function () {
+  cy = cytoscape({
+    container: document.getElementById('map'),
+    elements: JSON.parse(document.getElementById('init-nodes').textContent),
+    style: [
+      {
+        selector: 'node',
+        style: node_default_style
+      },
+      {
+        selector: 'edge',
+        style: {
+          'width': 3,
+          'line-color': '#ccc',
+          'target-arrow-color': '#ccc',
+          'target-arrow-shape': 'triangle',
+          'label': `data(${link_dist_attr})`
+        }
       }
+    ],
+    layout: {
+      name: 'grid',
+      rows: 3
     }
-  ],
-  layout: {
-    name: 'grid',
-    rows: 1
-  }
-});
+  });
 
-cy.on('tap', function(event){
-  let target = event.target;
-  if (target === cy) {
-    if (add_node_mode === true) {
-      new_node = place_node(event.position.x, event.position.y);
-      add_node_mode = false;
-      show_city_name_input(new_node);
-    }
-    destroy_node_options();
+  let link_array = JSON.parse(document.getElementById('init-links').textContent);
+  for (let link of link_array) {
+    console.log(link);
+    cy.add(link);
   }
-});
 
-cy.on('tap', 'node', function (event) {
-  let node = event.target;
-  if (add_link_mode === true) {
-    if (new_link_start) {
-      let link = create_link(node);
-      show_link_dist_input(link);
-    } else {
-      node.style(node_highlight_style);
-      new_link_start = node;
-    }
-  } else {
-    open_node_options(node);
-  }
-});
-
-cy.on('add', 'node', function () {
   if (cy.nodes().length > 1) {
     enable_link_add();
   }
 
+  cy.on('tap', function(event){
+    let target = event.target;
+    if (target === cy) {
+      if (add_node_mode === true) {
+        new_node = place_node(event.position.x, event.position.y);
+        add_node_mode = false;
+        show_city_name_input(new_node);
+      }
+      destroy_node_options();
+    }
+  });
 
-});
+  cy.on('tap', 'node', function (event) {
+    let node = event.target;
+    if (add_link_mode === true) {
+      if (new_link_start) {
+        let link = create_link(node);
+        show_link_dist_input(link);
+      } else {
+        node.style(node_highlight_style);
+        new_link_start = node;
+      }
+    } else {
+      open_node_options(node);
+    }
+  });
 
-cy.on('remove', 'node', function () {
-  if (cy.nodes().length < 2) {
-    disable_link_add();
-  }
+  cy.on('add', 'node', function () {
+    if (cy.nodes().length > 1) {
+      enable_link_add();
+    }
+  });
+
+  cy.on('remove', 'node', function () {
+    if (cy.nodes().length < 2) {
+      disable_link_add();
+    }
+  });
 });
 
 function enable_link_add() {

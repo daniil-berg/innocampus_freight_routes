@@ -71,6 +71,42 @@ class Map(AbstractModel):
                 m[node.pk][link.pk] = (-1) * link.distance
         return m
 
+    @property
+    def cytoscape_nodes_list(self):
+        out = []
+        for node in self.nodes.filter(city__isnull=False):
+            out.append({
+                'group': 'nodes',
+                'data': {
+                    'id': node.pk,
+                    'label': node.city.name,
+                }
+            })
+        return out
+
+    @property
+    def cytoscape_links_list(self):
+        out = []
+        skip = set()
+        for link in Link.objects.filter(tail__map=self):
+            if link.pk in skip:
+                continue
+            if Link.objects.filter(tail=link.head, head=link.tail, distance=link.distance).exists():
+                out.append({
+                    'data': {
+                        'id': link.pk,
+                        'source': link.tail.pk,
+                        'target': link.head.pk,
+                        'label': link.distance,
+                    }
+                })
+                skip.add(Link.objects.get(tail=link.head, head=link.tail, distance=link.distance).pk)
+        return out
+
+    @property
+    def cytoscape_elements_list(self):
+        return self.cytoscape_nodes_list + self.cytoscape_links_list
+
     def dijkstra(self, start: Union[int, 'Node'], sum_costs: bool = True, unreachable_dist: float = inf
                  ) -> Tuple[Dict[int, float], Dict[int, Optional[int]]]:
         """
