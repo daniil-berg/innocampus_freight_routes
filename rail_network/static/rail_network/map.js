@@ -31,6 +31,7 @@ const node_highlight_style = {
   'border-style': 'solid',
   'border-color': 'green',
 };
+const link_dist_attr = 'label';
 
 let add_node_mode = false;
 let new_node = null;
@@ -41,8 +42,9 @@ let new_link_start = null;
 let cy = cytoscape({
   container: document.getElementById('map'),
   elements: [
-    // {data: { id: 'a' }},
-    // {data: { id: 'b' }}
+    {group: 'nodes', data: {label: 'Testcity 1'}},
+    {group: 'nodes', data: {label: 'Testcity 2'}},
+    {group: 'nodes', data: {label: 'Testcity 3'}}
   ],
   style: [
     {
@@ -56,7 +58,7 @@ let cy = cytoscape({
         'line-color': '#ccc',
         'target-arrow-color': '#ccc',
         'target-arrow-shape': 'triangle',
-        'label': 'data(label)'
+        'label': `data(${link_dist_attr})`
       }
     }
   ],
@@ -93,13 +95,15 @@ cy.on('tap', 'node', function (event) {
   }
 });
 
-cy.on('add', function () {
+cy.on('add', 'node', function () {
   if (cy.nodes().length > 1) {
     enable_link_add();
   }
+
+
 });
 
-cy.on('remove', function () {
+cy.on('remove', 'node', function () {
   if (cy.nodes().length < 2) {
     disable_link_add();
   }
@@ -225,7 +229,7 @@ function show_link_dist_input(link) {
 function confirm_link_dist(link_id) {
   let input_value = document.getElementsByClassName(link_dist_input_class)[0].value;
   let link = cy.getElementById(link_id);
-  link.data('label', input_value);
+  link.data(link_dist_attr, input_value);
   cancel_add_link_mode();
   new_link_start.style(node_default_style);
   link.target().style(node_default_style);
@@ -290,4 +294,22 @@ function destroy_node_options() {
   if (options_div) {
     options_div.remove();
   }
+}
+
+function get_adjacency_matrix() {
+  let nodes = cy.nodes();
+  let adj_mat = [];
+  for (let node of nodes) {
+    let row = [];
+    for (let other_node of nodes) {
+      let edges = node.edgesWith(other_node);
+      if (edges.length === 1) {
+        row.push(parseFloat(edges[0].data(link_dist_attr)));
+      } else {
+        row.push(0);
+      }
+    }
+    adj_mat.push(row);
+  }
+  console.log(adj_mat);
 }
