@@ -1,4 +1,4 @@
-from typing import Optional, Union, Tuple, Dict
+from typing import Optional, Union, Tuple, List, Dict
 from math import inf
 
 from django.db.models import (Model,
@@ -156,6 +156,27 @@ class Map(AbstractModel):
                     if link.head.pk not in priority_q:
                         priority_q[link.head] = dist[link.head.pk]
         return dist, pred
+
+    @staticmethod
+    def backtrack_from_to(start: int, end: int, predecessors: Dict[int, Optional[int]]) -> List[int]:
+        path = [end]
+        current = end
+        while current != start:
+            current = predecessors[current]
+            path.append(current)
+        path.reverse()
+        return path
+
+    def dijkstra_from_to(self, start: Union[int, 'Node'], end: Union[int, 'Node'], sum_costs: bool = True,
+                         unreachable_dist: float = inf) -> Tuple[float, List[int]]:
+        if isinstance(end, Node):
+            end = end.pk
+        distances, predecessors = self.dijkstra(start=start, sum_costs=sum_costs, unreachable_dist=unreachable_dist)
+        dist = distances[end]
+        if isinstance(start, Node):
+            start = start.pk
+        path = self.backtrack_from_to(end=end, start=start, predecessors=predecessors)
+        return dist, path
 
     class Meta:
         verbose_name = _("Map")
