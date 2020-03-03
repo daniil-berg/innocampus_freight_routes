@@ -1,6 +1,6 @@
 # Custom
 local_settings.py
-Pipfile
+#Pipfile
 Pipfile.lock
 /.idea/
 /.venv/
