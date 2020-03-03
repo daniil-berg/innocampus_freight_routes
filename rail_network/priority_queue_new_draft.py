@@ -1,3 +1,7 @@
+"""
+Time was short, so this module is not yet complete and therefore never used elsewhere in the project.
+"""
+
 from typing import Any, Iterable
 from collections.abc import Sequence, MutableSequence
 
