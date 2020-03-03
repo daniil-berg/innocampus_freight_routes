@@ -345,11 +345,15 @@ function open_link_options(link) {
 
 function change_link_dist(link_id) {
   let input_value = document.getElementsByClassName(link_dist_input_class)[0].value;
-  let link = cy.getElementById(link_id);
-  link.data(link_dist_attr, input_value);
-  let pk = link.data('id').slice(1);  // because the first character is the "e" marker for edges
-  api_update_link(pk, link_api_data(link)).then((data) => console.log(data));
-  destroy_options();
+  if (isNumeric(input_value) && input_value >= 0) {
+    let link = cy.getElementById(link_id);
+    link.data(link_dist_attr, input_value);
+    let pk = link.data('id').slice(1);  // because the first character is the "e" marker for edges
+    api_update_link(pk, link_api_data(link)).then((data) => console.log(data));
+    destroy_options();
+  } else {
+    alert("Distance must be a non-negative real number")
+  }
 }
 
 function delete_link_confirm(btn, link_id) {
