@@ -95,7 +95,7 @@ class Map(AbstractModel):
         for link in Link.objects.filter(tail__map=self):
             if link.pk in skip:
                 continue
-            if Link.objects.filter(tail=link.head, head=link.tail, distance=link.distance).exists():
+            if Link.objects.filter(tail=link.head, head=link.tail).exists():
                 out.append({
                     'group': 'edges',
                     'data': {
