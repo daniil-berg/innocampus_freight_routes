@@ -62,16 +62,13 @@ $(document).ready(function () {
       }
     ],
     layout: {
-      name: 'grid',
-      rows: 3
+      name: 'preset'
     }
   });
 
   let link_array = JSON.parse(document.getElementById('init-links').textContent);
-  for (let link of link_array) {
-    console.log(link);
-    cy.add(link);
-  }
+  // add_edges(link_array, 1000).then();
+  console.log(cy.nodes());
 
   if (cy.nodes().length > 1) {
     enable_link_add();
@@ -116,6 +113,19 @@ $(document).ready(function () {
     }
   });
 });
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function add_edges(arr_edges, timeout_between = 0) {
+  for (let obj of arr_edges) {
+    await sleep(timeout_between);
+    console.log(obj);
+    console.log(`Edge ID ${obj.data.id}, From ${obj.data.source} to ${obj.data.target}, dist ${obj.data.label}`);
+    cy.add(obj);
+  }
+}
 
 function enable_link_add() {
   add_link_btn.removeAttribute('disabled');

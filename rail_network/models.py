@@ -80,6 +80,10 @@ class Map(AbstractModel):
                 'data': {
                     'id': node.pk,
                     'label': node.city.name,
+                },
+                'position': {
+                    'x': node.pos_h,
+                    'y': node.pos_v,
                 }
             })
         return out
@@ -93,6 +97,7 @@ class Map(AbstractModel):
                 continue
             if Link.objects.filter(tail=link.head, head=link.tail, distance=link.distance).exists():
                 out.append({
+                    'group': 'edges',
                     'data': {
                         'id': link.pk,
                         'source': link.tail.pk,
@@ -202,6 +207,7 @@ class Node(AbstractModel):
     def pos(self, pos_h_v: Tuple[int, int]) -> None:
         self.pos_h = pos_h_v[0]
         self.pos_v = pos_h_v[1]
+        self.save()
 
     class Meta:
         constraints = [
