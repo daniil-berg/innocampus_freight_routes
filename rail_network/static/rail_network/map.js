@@ -27,7 +27,8 @@ const node_default_style = {
   'height': '20px',
   'background-color': '#666',
   'border-width': '0px',
-  'label': 'data(label)'
+  'label': 'data(label)',
+  'font-size': '12px',
 };
 const node_highlight_style = {
   'background-color': '#ff0000',
@@ -38,7 +39,8 @@ const node_highlight_style = {
 const link_default_style = {
   'width': 3,
   'line-color': '#ccc',
-  'label': `data(${link_dist_attr})`
+  'label': `data(${link_dist_attr})`,
+  'font-size': '12px',
 };
 
 let add_node_mode = false;
