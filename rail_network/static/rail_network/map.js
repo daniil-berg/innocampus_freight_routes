@@ -1,5 +1,6 @@
 const add_city_btn = document.getElementById('add-city');
 const add_link_btn = document.getElementById('add-link');
+const shortest_path_btn = document.getElementById('get-shortest-path');
 
 const cancel_btn_class = 'cancel';
 const cancel_btn_text = 'Cancel';
@@ -17,6 +18,10 @@ const confirm_link_dist_btn_class = 'confirm-link-dist';
 const options_wrapper_div_class = 'options-wrapper';
 const confirm_node_rename_btn_class = 'confirm-node-rename';
 const delete_node_btn_class = 'node-delete';
+
+const shortest_path_btn_text = 'Add city';
+const algorithm_select_class = 'algorithm-select';
+const algorithm_start_btn_class = 'algorithm-start';
 
 const link_dist_attr = 'weight';
 
@@ -40,12 +45,17 @@ const link_default_style = {
   'label': `data(${link_dist_attr})`,
   'font-size': '12px',
 };
+const link_highlight_style = {
+  'line-color': '#ff0000',
+};
 
 let add_node_mode = false;
 let new_node = null;
 let add_link_mode = false;
 let new_link = null;
 let new_link_start = null;
+let shortest_path_mode = false;
+let shortest_path_start = null;
 
 let cy = null;
 
@@ -90,6 +100,7 @@ function setup() {
 
   add_city_btn.addEventListener('click', add_city_btn_click, false);
   add_link_btn.addEventListener('click', add_link_btn_click, false);
+  shortest_path_btn.addEventListener('click', shortest_path_btn_click, false);
 }
 
 function enable_link_add() {
@@ -119,6 +130,13 @@ function node_tapped(event) {
       node.style(node_highlight_style);
       new_link_start = node;
     }
+  } else if (shortest_path_mode === true) {
+    if (shortest_path_start) {
+      show_shortest_path_options(node);
+    } else {
+      node.style(node_highlight_style);
+      shortest_path_start = node;
+    }
   } else {
     open_node_options(node);
   }
@@ -143,6 +161,8 @@ function link_tapped(event) {
   open_link_options(link);
 }
 
+////////////////////
+// Button clicks: //
 function add_city_btn_click() {
   if (add_node_mode === false) {
     add_node_mode = true;
@@ -155,6 +175,31 @@ function add_city_btn_click() {
     }
   }
 }
+
+function add_link_btn_click() {
+  if (add_link_mode === false) {
+    add_link_mode = true;
+    add_link_btn.innerText = cancel_btn_text;
+    add_link_btn.setAttribute('class', cancel_btn_class);
+  } else {
+    cancel_add_link_mode();
+    if (new_link !== null) {
+      new_link.remove();
+    }
+  }
+}
+
+function shortest_path_btn_click() {
+  if (shortest_path_mode === false) {
+    shortest_path_mode = true;
+    shortest_path_btn.innerText = cancel_btn_text;
+    shortest_path_btn.setAttribute('class', cancel_btn_class);
+  } else {
+    cancel_shortest_path_mode();
+  }
+}
+
+
 
 function place_node(x, y) {
   return cy.add({
@@ -193,19 +238,6 @@ function destroy_city_name_input() {
   let city_name_form = document.getElementsByClassName(city_name_form_class)[0];
   if (city_name_form) {
     city_name_form.remove();
-  }
-}
-
-function add_link_btn_click() {
-  if (add_link_mode === false) {
-    add_link_mode = true;
-    add_link_btn.innerText = cancel_btn_text;
-    add_link_btn.setAttribute('class', cancel_btn_class);
-  } else {
-    cancel_add_link_mode();
-    if (new_link !== null) {
-      new_link.remove();
-    }
   }
 }
 
@@ -277,6 +309,23 @@ function open_link_options(link) {
   options_div.appendChild(link_dist_form);
   document.getElementsByTagName('main')[0].appendChild(options_div);
   input_field.focus();
+}
+
+function cancel_shortest_path_mode() {
+  shortest_path_mode = false;
+  shortest_path_btn.innerText = shortest_path_btn_text;
+  shortest_path_btn.removeAttribute('class');
+  destroy_options();
+  cy.nodes().style(node_default_style);
+  cy.edges().style(link_default_style);
+}
+
+function show_shortest_path_options(end_node) {
+  let options_div = create_options_wrapper(end_node.renderedPosition());
+  let select_field = create_algorithm_select();
+  options_div.appendChild(select_field);
+  options_div.appendChild(create_algorithm_start_btn(end_node));
+  document.getElementsByTagName('main')[0].appendChild(options_div);
 }
 
 ///////////////////////////
@@ -362,6 +411,26 @@ function create_link_delete_btn(link) {
   delete_btn.setAttribute('onclick', `delete_link_confirm(this, '${link.id()}')`);
   return delete_btn;
 }
+
+function create_algorithm_select() {
+  let select_field = document.createElement('select');
+  select_field.classList.add(algorithm_select_class);
+  let option = document.createElement('option');
+  option.setAttribute('value', 'dijkstra')
+  option.innerHTML = "Dijkstra";
+  select_field.appendChild(option);
+  return select_field;
+}
+
+function create_algorithm_start_btn(end_node) {
+  let confirm_btn = document.createElement('button');
+  confirm_btn.innerHTML = "Start";
+  confirm_btn.classList.add(algorithm_start_btn_class);
+  confirm_btn.setAttribute('onclick', `show_shortest_path('${shortest_path_start.data("id")}', '${end_node.data("id")}')`);
+  return confirm_btn;
+}
+
+
 
 
 
@@ -456,6 +525,22 @@ function delete_link(link_id) {
   link.remove();
   let pk = link.data('id').slice(1);  // because the first character is the "e" marker for edges
   api_destroy_link(pk).then();
+  destroy_options();
+}
+
+async function show_shortest_path(start, end) {
+  let start_id = start.slice(1);  // because the first character is the "n" marker for nodes
+  let end_id = end.slice(1);
+  const result = await api_get_shortest_path(start_id, end_id);
+  let prev_node_id = 'n' + start_id;
+  for (let pk of result['path'].slice(1)) {
+    let current_node_id = 'n' + pk;
+    let node = cy.getElementById(current_node_id);
+    let edge = cy.filter(`edge[source = "${prev_node_id}"][target = "${current_node_id}"]`);
+    node.style(node_highlight_style);
+    edge.style(link_highlight_style);
+    prev_node_id = current_node_id;
+  }
   destroy_options();
 }
 
