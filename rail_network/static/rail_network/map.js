@@ -49,7 +49,13 @@ let new_link_start = null;
 
 let cy = null;
 
-$(document).ready(function () {
+$(document).ready(function(){setup()});
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function setup() {
   cy = cytoscape({
     container: document.getElementById('map'),
     elements: JSON.parse(document.getElementById('init-elements').textContent),
@@ -69,52 +75,15 @@ $(document).ready(function () {
     }
   });
 
-  if (cy.nodes().length > 1) {
-    enable_link_add();
-  }
+  if (cy.nodes().length > 1) { enable_link_add() }
 
-  cy.on('tap', function(event){
-    let target = event.target;
-    if (target === cy) {
-      if (add_node_mode === true) {
-        new_node = place_node(event.position.x, event.position.y);
-        add_node_mode = false;
-        show_city_name_input(new_node);
-      }
-      destroy_node_options();
-    }
-  });
+  cy.on('tap', function(event){ if (event.target === cy) {canvas_tapped(event)} });
+  cy.on('tap', 'node', function(event){node_tapped(event)});
+  cy.on('add', 'node', function(){node_added()});
+  cy.on('remove', 'node', function(){node_removed()});
 
-  cy.on('tap', 'node', function (event) {
-    let node = event.target;
-    if (add_link_mode === true) {
-      if (new_link_start) {
-        let link = create_link(node);
-        show_link_dist_input(link);
-      } else {
-        node.style(node_highlight_style);
-        new_link_start = node;
-      }
-    } else {
-      open_node_options(node);
-    }
-  });
-
-  cy.on('add', 'node', function () {
-    if (cy.nodes().length > 1) {
-      enable_link_add();
-    }
-  });
-
-  cy.on('remove', 'node', function () {
-    if (cy.nodes().length < 2) {
-      disable_link_add();
-    }
-  });
-});
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  add_city_btn.addEventListener('click', add_city_btn_click, false);
+  add_link_btn.addEventListener('click', add_link_btn_click, false);
 }
 
 function enable_link_add() {
@@ -125,8 +94,37 @@ function disable_link_add() {
   add_link_btn.disabled = true;
 }
 
-add_city_btn.addEventListener('click', add_city_btn_click, false);
-add_link_btn.addEventListener('click', add_link_btn_click, false);
+function canvas_tapped(event) {
+  if (add_node_mode === true) {
+    new_node = place_node(event.position.x, event.position.y);
+    add_node_mode = false;
+    show_city_name_input(new_node);
+  }
+  destroy_node_options();
+}
+
+function node_tapped(event) {
+  let node = event.target;
+  if (add_link_mode === true) {
+    if (new_link_start) {
+      let link = create_link(node);
+      show_link_dist_input(link);
+    } else {
+      node.style(node_highlight_style);
+      new_link_start = node;
+    }
+  } else {
+    open_node_options(node);
+  }
+}
+
+function node_added() {
+  if (cy.nodes().length > 1) { enable_link_add() }
+}
+
+function node_removed() {
+  if (cy.nodes().length < 2) { disable_link_add(); }
+}
 
 function add_city_btn_click() {
   if (add_node_mode === false) {
@@ -278,7 +276,7 @@ function open_node_options(node) {
   let delete_btn = document.createElement('button');
   delete_btn.innerHTML = "Delete";
   delete_btn.classList.add(delete_node_btn_class);
-  delete_btn.setAttribute('onclick', `delete_node('${node.id()}')`);
+  delete_btn.setAttribute('onclick', `delete_node_confirm(this, '${node.id()}')`);
   name_change_form.appendChild(delete_btn);
   document.getElementsByTagName('main')[0].appendChild(options_div);
   input_field.focus();
@@ -289,6 +287,11 @@ function change_city_name(node_id) {
   let node = cy.getElementById(node_id);
   node.data('label', input_value);
   destroy_node_options();
+}
+
+function delete_node_confirm(btn, node_id) {
+  btn.innerHTML = "Confirm deletion";
+  btn.setAttribute('onclick', `delete_node('${node_id}')`);
 }
 
 function delete_node(node_id) {
