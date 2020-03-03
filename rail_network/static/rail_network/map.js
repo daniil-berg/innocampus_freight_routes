@@ -134,7 +134,7 @@ function node_removed(event) {
 function node_pos_change(event) {
   let node = event.target;
   let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
-  api_update_node(pk, node_api_data(node)).then( (data) => console.log(data));
+  api_update_node(pk, node_api_data(node)).then();
 }
 
 function add_city_btn_click() {
@@ -306,6 +306,8 @@ function change_city_name(node_id) {
   let input_value = document.getElementsByClassName(node_rename_input_class)[0].value;
   let node = cy.getElementById(node_id);
   node.data('label', input_value);
+  let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
+  api_update_node(pk, node_api_data(node)).then();
   destroy_node_options();
 }
 
