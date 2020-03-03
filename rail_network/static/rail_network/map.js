@@ -20,7 +20,11 @@ const node_rename_input_class = 'node-rename-input';
 const confirm_node_rename_btn_class = 'confirm-node-rename';
 const delete_node_btn_class = 'node-delete';
 
+const link_dist_attr = 'weight';
+
 const node_default_style = {
+  'width': '20px',
+  'height': '20px',
   'background-color': '#666',
   'border-width': '0px',
   'label': 'data(label)'
@@ -31,7 +35,11 @@ const node_highlight_style = {
   'border-style': 'solid',
   'border-color': 'green',
 };
-const link_dist_attr = 'label';
+const link_default_style = {
+  'width': 3,
+  'line-color': '#ccc',
+  'label': `data(${link_dist_attr})`
+};
 
 let add_node_mode = false;
 let new_node = null;
@@ -44,7 +52,7 @@ let cy = null;
 $(document).ready(function () {
   cy = cytoscape({
     container: document.getElementById('map'),
-    elements: JSON.parse(document.getElementById('init-nodes').textContent),
+    elements: JSON.parse(document.getElementById('init-elements').textContent),
     style: [
       {
         selector: 'node',
@@ -52,23 +60,14 @@ $(document).ready(function () {
       },
       {
         selector: 'edge',
-        style: {
-          'width': 3,
-          'line-color': '#ccc',
-          'target-arrow-color': '#ccc',
-          'target-arrow-shape': 'triangle',
-          'label': `data(${link_dist_attr})`
-        }
+        style: link_default_style
       }
     ],
     layout: {
-      name: 'preset'
+      name: 'preset',
+      directed: false,
     }
   });
-
-  let link_array = JSON.parse(document.getElementById('init-links').textContent);
-  // add_edges(link_array, 1000).then();
-  console.log(cy.nodes());
 
   if (cy.nodes().length > 1) {
     enable_link_add();
@@ -116,15 +115,6 @@ $(document).ready(function () {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function add_edges(arr_edges, timeout_between = 0) {
-  for (let obj of arr_edges) {
-    await sleep(timeout_between);
-    console.log(obj);
-    console.log(`Edge ID ${obj.data.id}, From ${obj.data.source} to ${obj.data.target}, dist ${obj.data.label}`);
-    cy.add(obj);
-  }
 }
 
 function enable_link_add() {

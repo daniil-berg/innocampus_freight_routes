@@ -78,7 +78,7 @@ class Map(AbstractModel):
             out.append({
                 'group': 'nodes',
                 'data': {
-                    'id': node.pk,
+                    'id': 'n' + str(node.pk),
                     'label': node.city.name,
                 },
                 'position': {
@@ -99,10 +99,10 @@ class Map(AbstractModel):
                 out.append({
                     'group': 'edges',
                     'data': {
-                        'id': link.pk,
-                        'source': link.tail.pk,
-                        'target': link.head.pk,
-                        'label': link.distance,
+                        'id': 'e' + str(link.pk),
+                        'source': 'n' + str(link.tail.pk),
+                        'target': 'n' + str(link.head.pk),
+                        'weight': link.distance,
                     }
                 })
                 skip.add(Link.objects.get(tail=link.head, head=link.tail, distance=link.distance).pk)
