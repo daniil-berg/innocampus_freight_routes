@@ -3,9 +3,9 @@ from django.shortcuts import render
 from .models import Map
 
 
-def new_map(request):
+def graph_map(request):
     """
-    Currently, this just loads the Map (i.e. Graph) last saved in the database into the context in Cytoscape.js format
+    TODO: Currently, this just loads the Map (i.e. Graph) last saved in the database into the context in Cytoscape.js format
     """
     init_elements = []
     if Map.objects.all().count() != 0:
@@ -14,4 +14,4 @@ def new_map(request):
     context = {
         'init_elements': init_elements,
     }
-    return render(request, 'rail_network/new_map.html', context=context)
+    return render(request, 'rail_network/map.html', context=context)

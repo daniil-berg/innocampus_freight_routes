@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
+from . import views, views_api
 
 urlpatterns = [
-    path('', views.new_map, name='new_map'),
+    path('', views.graph_map, name='graph_map'),
+    path('api/cities/', views_api.CityListCreateAPIView.as_view()),
 ]
