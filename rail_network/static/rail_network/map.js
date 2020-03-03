@@ -81,8 +81,8 @@ function setup() {
 
   cy.on('tap', function(event){ if (event.target === cy) {canvas_tapped(event)} });
   cy.on('tap', 'node', function(event){node_tapped(event)});
-  cy.on('add', 'node', function(){node_added()});
-  cy.on('remove', 'node', function(){node_removed()});
+  cy.on('add', 'node', function(event){node_added(event)});
+  cy.on('remove', 'node', function(event){node_removed(event)});
 
   add_city_btn.addEventListener('click', add_city_btn_click, false);
   add_link_btn.addEventListener('click', add_link_btn_click, false);
@@ -120,11 +120,13 @@ function node_tapped(event) {
   }
 }
 
-function node_added() {
+function node_added(event) {
+  let node = event.target;
   if (cy.nodes().length > 1) { enable_link_add() }
 }
 
-function node_removed() {
+function node_removed(event) {
+  let node = event.target;
   if (cy.nodes().length < 2) { disable_link_add(); }
 }
 
@@ -171,8 +173,17 @@ function confirm_city_name(node_id) {
   let input_value = document.getElementsByClassName(city_name_input_class)[0].value;
   let node = cy.getElementById(node_id);
   node.data('label', input_value);
+  api_create_node(node_api_data(node)).then(() => window.location.reload());
   cancel_add_node_mode();
   new_node = null;
+}
+
+function node_api_data(node) {
+  return  {
+    'pos_h': Math.round(node.position().x),
+    'pos_v': Math.round(node.position().y),
+    'city': {'name': node.data('label')}
+  }
 }
 
 function cancel_add_node_mode() {
@@ -299,6 +310,8 @@ function delete_node_confirm(btn, node_id) {
 function delete_node(node_id) {
   let node = cy.getElementById(node_id);
   node.remove();
+  let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
+  api_destroy_node(pk).then();
   destroy_node_options();
 }
 
