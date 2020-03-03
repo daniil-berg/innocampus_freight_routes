@@ -129,3 +129,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'innocampus_freight_routes', 'static'),
     os.path.join(BASE_DIR, 'rail_network', 'static'),
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
+}
