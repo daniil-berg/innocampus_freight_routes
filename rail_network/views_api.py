@@ -1,7 +1,7 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
-from .models import Map, Node, City
-from .serializers import NodeSerializer
+from .models import Map, Node, Link, City
+from .serializers import NodeSerializer, LinkSerializer
 
 
 class NodeListCreateAPIView(ListCreateAPIView):
@@ -12,3 +12,13 @@ class NodeListCreateAPIView(ListCreateAPIView):
 class NodeRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Node.objects.all()
     serializer_class = NodeSerializer
+
+
+class LinkListCreateAPIView(ListCreateAPIView):
+    queryset = Link.objects.all()
+    serializer_class = LinkSerializer
+
+
+class LinkRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Link.objects.all()
+    serializer_class = LinkSerializer

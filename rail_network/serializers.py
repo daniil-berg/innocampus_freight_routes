@@ -43,14 +43,14 @@ class NodeSerializer(serializers.ModelSerializer):
 
 
 class LinkSerializer(serializers.ModelSerializer):
-    tail = CitySerializer()
-    head = CitySerializer()
+    tail = NodeSerializer()
+    head = NodeSerializer()
     date_created = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
     date_updated = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
 
     class Meta:
         model = Link
-        fields = ('id', 'tail', 'head', 'distance', 'date_created', 'date_updated')
+        fields = ('id', 'distance', 'tail', 'head', 'date_created', 'date_updated')
 
     def create(self, validated_data):
         return Link.objects.create(**validated_data)
