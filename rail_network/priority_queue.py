@@ -1,6 +1,5 @@
-from typing import TypeVar, List, Tuple, Optional
+from typing import TypeVar
 from collections.abc import MutableMapping
-from math import inf
 
 
 AnyNumeric = TypeVar('AnyNumeric', int, float)
