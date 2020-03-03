@@ -194,6 +194,15 @@ class Node(AbstractModel):
         link_from = Link.objects.create(tail=head, head=self, distance=distance)
         return link_to, link_from
 
+    @property
+    def pos(self) -> Tuple[int, int]:
+        return self.pos_h, self.pos_v
+
+    @pos.setter
+    def pos(self, pos_h_v: Tuple[int, int]) -> None:
+        self.pos_h = pos_h_v[0]
+        self.pos_v = pos_h_v[1]
+
     class Meta:
         constraints = [
             UniqueConstraint(fields=['map', 'pos_h', 'pos_v'], name='exclusive_position'),
@@ -257,6 +266,14 @@ class City(AbstractModel):
 
     def link_with(self, head: Union[int, 'Node'], distance: float) -> Tuple['Link', 'Link']:
         return self.node.link_with(head=head, distance=distance)
+
+    @property
+    def pos(self) -> Tuple[int, int]:
+        return self.node.pos_h, self.node.pos_v
+
+    @pos.setter
+    def pos(self, pos_h_v: Tuple[int, int]) -> None:
+        self.node.pos = pos_h_v
 
     objects = CityManager()
 
