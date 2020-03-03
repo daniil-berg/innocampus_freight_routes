@@ -54,6 +54,9 @@ $(document).ready(function(){setup()});
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+function isNumeric(value) {
+    return !isNaN(value - parseFloat(value));
+}
 
 function setup() {
   cy = cytoscape({
@@ -79,8 +82,8 @@ function setup() {
 
   cy.on('tap', function(event){ if (event.target === cy) {canvas_tapped(event)} });
   cy.on('tap', 'node', function(event){node_tapped(event)});
-  cy.on('add', 'node', function(event){node_added(event)});
-  cy.on('remove', 'node', function(event){node_removed(event)});
+  cy.on('add', 'node', function(event){node_added()});
+  cy.on('remove', 'node', function(event){node_removed()});
   cy.on('dragfreeon', 'node', function(event){node_pos_change(event)});
   cy.on('tap', 'edge', function(event){link_tapped(event)});
 
@@ -120,13 +123,11 @@ function node_tapped(event) {
   }
 }
 
-function node_added(event) {
-  let node = event.target;
+function node_added() {
   if (cy.nodes().length > 1) { enable_link_add() }
 }
 
-function node_removed(event) {
-  let node = event.target;
+function node_removed() {
   if (cy.nodes().length < 2) { disable_link_add(); }
 }
 
@@ -243,13 +244,18 @@ function show_link_dist_input(link) {
 
 function confirm_link_dist(link_id) {
   let input_value = document.getElementsByClassName(link_dist_input_class)[0].value;
-  let link = cy.getElementById(link_id);
-  link.data(link_dist_attr, input_value);
-  api_create_link(link_api_data(link)).then((data) => window.location.reload());
-  cancel_add_link_mode();
-  new_link_start.style(node_default_style);
-  link.target().style(node_default_style);
-  new_link_start = null;
+  if (isNumeric(input_value) && input_value >= 0) {
+    if (input_value < 0) {alert("Distance can not be negative"); return false}
+    let link = cy.getElementById(link_id);
+    link.data(link_dist_attr, input_value);
+    api_create_link(link_api_data(link)).then((data) => window.location.reload());
+    cancel_add_link_mode();
+    new_link_start.style(node_default_style);
+    link.target().style(node_default_style);
+    new_link_start = null;
+  } else {
+    alert("Distance must be a non-negative real number")
+  }
 }
 
 function cancel_add_link_mode() {
