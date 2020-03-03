@@ -51,10 +51,11 @@ let cy = null;
 
 $(document).ready(function(){setup()});
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-function isNumeric(value) {
+// function sleep(ms) {
+//   return new Promise(resolve => setTimeout(resolve, ms));
+// }
+
+function is_numeric(value) {
     return !isNaN(value - parseFloat(value));
 }
 
@@ -82,8 +83,8 @@ function setup() {
 
   cy.on('tap', function(event){ if (event.target === cy) {canvas_tapped(event)} });
   cy.on('tap', 'node', function(event){node_tapped(event)});
-  cy.on('add', 'node', function(event){node_added()});
-  cy.on('remove', 'node', function(event){node_removed()});
+  cy.on('add', 'node', function(){node_added()});
+  cy.on('remove', 'node', function(){node_removed()});
   cy.on('dragfreeon', 'node', function(event){node_pos_change(event)});
   cy.on('tap', 'edge', function(event){link_tapped(event)});
 
@@ -181,15 +182,6 @@ function show_city_name_input(node) {
   input_field.focus();
 }
 
-function confirm_city_name(node_id) {
-  let input_value = document.getElementsByClassName(city_name_input_class)[0].value;
-  let node = cy.getElementById(node_id);
-  node.data('label', input_value);
-  api_create_node(node_api_data(node)).then(() => window.location.reload());
-  cancel_add_node_mode();
-  new_node = null;
-}
-
 function cancel_add_node_mode() {
   add_node_mode = false;
   add_city_btn.innerText = add_city_btn_text;
@@ -242,22 +234,6 @@ function show_link_dist_input(link) {
   input_field.focus();
 }
 
-function confirm_link_dist(link_id) {
-  let input_value = document.getElementsByClassName(link_dist_input_class)[0].value;
-  if (isNumeric(input_value) && input_value >= 0) {
-    if (input_value < 0) {alert("Distance can not be negative"); return false}
-    let link = cy.getElementById(link_id);
-    link.data(link_dist_attr, input_value);
-    api_create_link(link_api_data(link)).then((data) => window.location.reload());
-    cancel_add_link_mode();
-    new_link_start.style(node_default_style);
-    link.target().style(node_default_style);
-    new_link_start = null;
-  } else {
-    alert("Distance must be a non-negative real number")
-  }
-}
-
 function cancel_add_link_mode() {
   add_link_mode = false;
   add_link_btn.innerText = add_link_btn_text;
@@ -284,51 +260,11 @@ function open_node_options(node) {
   input_field.focus();
 }
 
-function change_city_name(node_id) {
-  let input_value = document.getElementsByClassName(city_name_input_class)[0].value;
-  let node = cy.getElementById(node_id);
-  node.data('label', input_value);
-  let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
-  api_update_node(pk, node_api_data(node)).then();
-  destroy_options();
-}
-
-function delete_node_confirm(btn, node_id) {
-  btn.innerHTML = "Confirm deletion";
-  btn.setAttribute('onclick', `delete_node('${node_id}')`);
-}
-
-function delete_node(node_id) {
-  let node = cy.getElementById(node_id);
-  node.remove();
-  let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
-  api_destroy_node(pk).then();
-  destroy_options();
-}
-
 function destroy_options() {
   let options_div = document.getElementsByClassName(options_wrapper_div_class)[0];
   if (options_div) {
     options_div.remove();
   }
-}
-
-function get_adjacency_matrix() {
-  let nodes = cy.nodes();
-  let adj_mat = [];
-  for (let node of nodes) {
-    let row = [];
-    for (let other_node of nodes) {
-      let edges = node.edgesWith(other_node);
-      if (edges.length === 1) {
-        row.push(parseFloat(edges[0].data(link_dist_attr)));
-      } else {
-        row.push(0);
-      }
-    }
-    adj_mat.push(row);
-  }
-  console.log(adj_mat);
 }
 
 function open_link_options(link) {
@@ -341,32 +277,6 @@ function open_link_options(link) {
   options_div.appendChild(link_dist_form);
   document.getElementsByTagName('main')[0].appendChild(options_div);
   input_field.focus();
-}
-
-function change_link_dist(link_id) {
-  let input_value = document.getElementsByClassName(link_dist_input_class)[0].value;
-  if (isNumeric(input_value) && input_value >= 0) {
-    let link = cy.getElementById(link_id);
-    link.data(link_dist_attr, input_value);
-    let pk = link.data('id').slice(1);  // because the first character is the "e" marker for edges
-    api_update_link(pk, link_api_data(link)).then((data) => console.log(data));
-    destroy_options();
-  } else {
-    alert("Distance must be a non-negative real number")
-  }
-}
-
-function delete_link_confirm(btn, link_id) {
-  btn.innerHTML = "Confirm deletion";
-  btn.setAttribute('onclick', `delete_link('${link_id}')`);
-}
-
-function delete_link(link_id) {
-  let link = cy.getElementById(link_id);
-  link.remove();
-  let pk = link.data('id').slice(1);  // because the first character is the "e" marker for edges
-  api_destroy_link(pk).then();
-  destroy_options();
 }
 
 ///////////////////////////
@@ -469,4 +379,102 @@ function link_api_data(link) {
     'head': link.data('target').slice(1),
     'distance': link.data('weight')
   }
+}
+
+
+
+
+function confirm_city_name(node_id) {
+  let input_value = document.getElementsByClassName(city_name_input_class)[0].value;
+  let node = cy.getElementById(node_id);
+  node.data('label', input_value);
+  api_create_node(node_api_data(node)).then(() => window.location.reload());
+  cancel_add_node_mode();
+  new_node = null;
+}
+
+function change_city_name(node_id) {
+  let input_value = document.getElementsByClassName(city_name_input_class)[0].value;
+  let node = cy.getElementById(node_id);
+  node.data('label', input_value);
+  let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
+  api_update_node(pk, node_api_data(node)).then();
+  destroy_options();
+}
+
+function delete_node_confirm(btn, node_id) {
+  btn.innerHTML = "Confirm deletion";
+  btn.setAttribute('onclick', `delete_node('${node_id}')`);
+}
+
+function delete_node(node_id) {
+  let node = cy.getElementById(node_id);
+  node.remove();
+  let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
+  api_destroy_node(pk).then();
+  destroy_options();
+}
+
+
+
+function confirm_link_dist(link_id) {
+  let input_value = document.getElementsByClassName(link_dist_input_class)[0].value;
+  if (is_numeric(input_value) && input_value >= 0) {
+    if (input_value < 0) {alert("Distance can not be negative"); return false}
+    let link = cy.getElementById(link_id);
+    link.data(link_dist_attr, input_value);
+    api_create_link(link_api_data(link)).then((data) => window.location.reload());
+    cancel_add_link_mode();
+    new_link_start.style(node_default_style);
+    link.target().style(node_default_style);
+    new_link_start = null;
+  } else {
+    alert("Distance must be a non-negative real number")
+  }
+}
+
+function change_link_dist(link_id) {
+  let input_value = document.getElementsByClassName(link_dist_input_class)[0].value;
+  if (is_numeric(input_value) && input_value >= 0) {
+    let link = cy.getElementById(link_id);
+    link.data(link_dist_attr, input_value);
+    let pk = link.data('id').slice(1);  // because the first character is the "e" marker for edges
+    api_update_link(pk, link_api_data(link)).then((data) => console.log(data));
+    destroy_options();
+  } else {
+    alert("Distance must be a non-negative real number")
+  }
+}
+
+function delete_link_confirm(btn, link_id) {
+  btn.innerHTML = "Confirm deletion";
+  btn.setAttribute('onclick', `delete_link('${link_id}')`);
+}
+
+function delete_link(link_id) {
+  let link = cy.getElementById(link_id);
+  link.remove();
+  let pk = link.data('id').slice(1);  // because the first character is the "e" marker for edges
+  api_destroy_link(pk).then();
+  destroy_options();
+}
+
+
+
+function get_adjacency_matrix() {
+  let nodes = cy.nodes();
+  let adj_mat = [];
+  for (let node of nodes) {
+    let row = [];
+    for (let other_node of nodes) {
+      let edges = node.edgesWith(other_node);
+      if (edges.length === 1) {
+        row.push(parseFloat(edges[0].data(link_dist_attr)));
+      } else {
+        row.push(0);
+      }
+    }
+    adj_mat.push(row);
+  }
+  console.log(adj_mat);
 }
