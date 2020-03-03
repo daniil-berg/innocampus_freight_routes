@@ -268,6 +268,9 @@ class Link(AbstractModel):
             return None
 
     class Meta:
+        constraints = [
+            UniqueConstraint(fields=['tail', 'head'], name='no_dual_links'),  # Reverse links still allowed!
+        ]
         verbose_name = _("Link")
         verbose_name_plural = _("Links")
 
