@@ -83,6 +83,7 @@ function setup() {
   cy.on('tap', 'node', function(event){node_tapped(event)});
   cy.on('add', 'node', function(event){node_added(event)});
   cy.on('remove', 'node', function(event){node_removed(event)});
+  cy.on('dragfreeon', 'node', function(event){node_pos_change(event)});
 
   add_city_btn.addEventListener('click', add_city_btn_click, false);
   add_link_btn.addEventListener('click', add_link_btn_click, false);
@@ -128,6 +129,12 @@ function node_added(event) {
 function node_removed(event) {
   let node = event.target;
   if (cy.nodes().length < 2) { disable_link_add(); }
+}
+
+function node_pos_change(event) {
+  let node = event.target;
+  let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
+  api_update_node(pk, node_api_data(node)).then( (data) => console.log(data));
 }
 
 function add_city_btn_click() {
