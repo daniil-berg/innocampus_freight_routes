@@ -1,16 +1,16 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
-from .models import Map, City
-from .serializers import CitySerializer
+from .models import Map, Node, City
+from .serializers import NodeSerializer
 
 
 # TODO: Here, as with the regular views, everything returned is always related to the last Map object
 
-class CityListCreateAPIView(ListCreateAPIView):
-    queryset = City.objects.filter(node__map=Map.objects.last())
-    serializer_class = CitySerializer
+class NodeListCreateAPIView(ListCreateAPIView):
+    queryset = Node.objects.filter(map=Map.objects.last())
+    serializer_class = NodeSerializer
 
 
-class CityRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = City.objects.filter(node__map=Map.objects.last())
-    serializer_class = CitySerializer
+class NodeRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    queryset = Node.objects.filter(map=Map.objects.last())
+    serializer_class = NodeSerializer
