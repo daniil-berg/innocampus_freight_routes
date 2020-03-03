@@ -260,6 +260,13 @@ class Link(AbstractModel):
     def __str__(self) -> str:
         return f"[{self.tail}] -> [{self.head}]"
 
+    @property
+    def reverse(self):
+        try:
+            return Link.objects.get(tail=self.head, head=self.tail)
+        except Link.DoesNotExist:
+            return None
+
     class Meta:
         verbose_name = _("Link")
         verbose_name_plural = _("Links")
