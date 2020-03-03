@@ -5,6 +5,9 @@ from .models import Node, Link, City
 
 
 class CitySerializer(serializers.ModelSerializer):
+    date_created = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+    date_updated = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+
     class Meta:
         model = City
         fields = ('id', 'name', 'date_created', 'date_updated')
@@ -12,10 +15,12 @@ class CitySerializer(serializers.ModelSerializer):
 
 class NodeSerializer(serializers.ModelSerializer):
     city = CitySerializer()
+    date_created = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+    date_updated = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
 
     class Meta:
         model = Node
-        fields = ('id', 'map', 'pos_h', 'pos_v', 'city', 'direct_successors', 'date_created', 'date_updated')
+        fields = ('id', 'map', 'pos_h', 'pos_v', 'city', 'date_created', 'date_updated')
 
     def create(self, validated_data):
         city_data = validated_data.pop('city')
@@ -34,4 +39,23 @@ class NodeSerializer(serializers.ModelSerializer):
                 instance.city.save()
             else:
                 City.objects.create(node=instance, **validated_data['city'])
+        return instance
+
+
+class LinkSerializer(serializers.ModelSerializer):
+    tail = CitySerializer()
+    head = CitySerializer()
+    date_created = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+    date_updated = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+
+    class Meta:
+        model = Link
+        fields = ('id', 'tail', 'head', 'distance', 'date_created', 'date_updated')
+
+    def create(self, validated_data):
+        return Link.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.distance = validated_data.get('distance', instance.distance)
+        instance.save()
         return instance
