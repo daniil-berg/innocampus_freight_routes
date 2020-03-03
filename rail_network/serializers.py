@@ -5,8 +5,8 @@ from .models import Node, Link, City
 
 
 class CitySerializer(serializers.ModelSerializer):
-    date_created = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
-    date_updated = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+    date_created = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
+    date_updated = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
 
     class Meta:
         model = City
@@ -15,8 +15,8 @@ class CitySerializer(serializers.ModelSerializer):
 
 class NodeSerializer(serializers.ModelSerializer):
     city = CitySerializer()
-    date_created = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
-    date_updated = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+    date_created = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
+    date_updated = serializers.DateTimeField(format='%Y-%m-%d %H:%M', read_only=True)
 
     class Meta:
         model = Node

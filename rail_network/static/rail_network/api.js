@@ -55,18 +55,34 @@ async function get_shortest_path(map_id, start_id, end_id) {
   return await api_request('GET', api_shortest_path_url, request_data);
 }
 
-async function update_node(map_id, node_id, data) {
+async function api_create_node(data, map_id = current_map_id) {
+  data['map'] = map_id;
+  return await api_request('POST', api_nodes_url, JSON.stringify(data));
+}
+
+async function api_update_node(node_id, data, map_id = current_map_id) {
   data['map'] = map_id;
   return await api_request('PATCH', api_nodes_url + node_id + '/', JSON.stringify(data));
 }
 
-async function update_link(map_id, link_id, data) {
+async function api_destroy_node(node_id) {
+  return await api_request('DELETE', api_nodes_url + node_id + '/');
+}
+
+async function api_update_link(link_id, data, map_id = current_map_id) {
   data['map'] = map_id;
   return await api_request('PATCH', api_links_url + link_id + '/', JSON.stringify(data));
 }
 
+async function api_destroy_link(link_id) {
+  return await api_request('DELETE', api_links_url + link_id + '/');
+}
+
 $(document).ready(function(){
-    // get_shortest_path(1, 1, 4).then( (data) => console.log(data));
-    // update_node(1, 3, {'pos_h': 200}).then( (data) => console.log(data));
-    // update_link(1, 7, {'distance': 100}).then( (data) => console.log(data));
+  // get_shortest_path(1, 1, 4).then( (data) => console.log(data));
+  // api_update_node(3, {'pos_h': 200}).then( (data) => console.log(data));
+  // api_update_link(7, {'distance': 100}).then( (data) => console.log(data));
+  // let node_data = {'pos_h': 400, 'pos_v': 400, 'city': {'name': 'Testcity NEW'}};
+  // api_create_node(node_data).then( (data) => console.log(data));
+  // api_destroy_node(5).then( (data) => console.log(data));
 });

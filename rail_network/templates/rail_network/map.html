@@ -22,7 +22,7 @@
     </script>
     {{ init_elements|json_script:"init-elements" }}
     <script type="text/javascript">
-        const map_id = {{ map_id }};
+        const current_map_id = {{ map_id }};
     </script>
     <script type="text/javascript" src="{% static 'rail_network/api.js' %}"></script>
     <script type="text/javascript" src="{% static 'rail_network/map.js' %}"></script>
