@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 from .models import Map, Node, Link
@@ -49,7 +50,39 @@ class LinkListCreateAPIView(ListCreateAPIView):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
 
+    def create(self, request, *args, **kwargs):
+        if 'head' not in request.data or 'tail' not in request.data:
+            return Response("Both 'head' and 'tail' are required", status=HTTP_400_BAD_REQUEST)
+        reverse_data = request.data.copy()
+        reverse_data['head'], reverse_data['tail'] = request.data['tail'], request.data['head']
+        serializer = self.get_serializer(data=request.data)
+        serializer_reverse = self.get_serializer(data=reverse_data)
+        serializer.is_valid(raise_exception=True)
+        serializer_reverse.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        self.perform_create(serializer_reverse)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=HTTP_201_CREATED, headers=headers)
+
 
 class LinkRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer_reverse = self.get_serializer(instance.reverse, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer_reverse.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        self.perform_update(serializer_reverse)
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance: Link = self.get_object()
+        with transaction.atomic():
+            self.perform_destroy(instance.reverse)
+            self.perform_destroy(instance)
+        return Response(status=HTTP_204_NO_CONTENT)

@@ -43,8 +43,6 @@ class NodeSerializer(serializers.ModelSerializer):
 
 
 class LinkSerializer(serializers.ModelSerializer):
-    tail = NodeSerializer()
-    head = NodeSerializer()
     date_created = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
     date_updated = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
 
