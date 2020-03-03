@@ -293,9 +293,9 @@ function open_node_options(node) {
 }
 
 function destroy_options() {
-  let options_div = document.getElementsByClassName(options_wrapper_div_class)[0];
-  if (options_div) {
-    options_div.remove();
+  let options_divs = document.getElementsByClassName(options_wrapper_div_class);
+  for (let div of options_divs) {
+    div.remove();
   }
 }
 
