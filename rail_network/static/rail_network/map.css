@@ -63,23 +63,11 @@ button.confirm-link-dist {
     border-radius: 0;
 }
 
-.node-options {
+.options-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     border-radius: 5px;
-    padding: 10px;
-}
-
-.node-rename-form {
-    height: 30px;
-    display: flex;
-}
-
-.node-rename-input {
-    height: 100%;
-    width: 150px;
-    border: none;
 }
 
 button.confirm-node-rename {

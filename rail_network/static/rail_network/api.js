@@ -69,6 +69,11 @@ async function api_destroy_node(node_id) {
   return await api_request('DELETE', api_nodes_url + node_id + '/');
 }
 
+async function api_create_link(data, map_id = current_map_id) {
+  data['map'] = map_id;
+  return await api_request('POST', api_links_url, JSON.stringify(data));
+}
+
 async function api_update_link(link_id, data, map_id = current_map_id) {
   data['map'] = map_id;
   return await api_request('PATCH', api_links_url + link_id + '/', JSON.stringify(data));

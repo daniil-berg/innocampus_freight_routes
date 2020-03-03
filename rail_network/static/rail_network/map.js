@@ -14,9 +14,7 @@ const link_dist_form_class = 'link-dist-form';
 const link_dist_input_class = 'link-dist-input';
 const confirm_link_dist_btn_class = 'confirm-link-dist';
 
-const node_options_div_class = 'node-options';
-const node_rename_form_class = 'node-rename-form';
-const node_rename_input_class = 'node-rename-input';
+const options_wrapper_div_class = 'options-wrapper';
 const confirm_node_rename_btn_class = 'confirm-node-rename';
 const delete_node_btn_class = 'node-delete';
 
@@ -84,6 +82,7 @@ function setup() {
   cy.on('add', 'node', function(event){node_added(event)});
   cy.on('remove', 'node', function(event){node_removed(event)});
   cy.on('dragfreeon', 'node', function(event){node_pos_change(event)});
+  cy.on('tap', 'edge', function(event){link_tapped(event)});
 
   add_city_btn.addEventListener('click', add_city_btn_click, false);
   add_link_btn.addEventListener('click', add_link_btn_click, false);
@@ -103,7 +102,7 @@ function canvas_tapped(event) {
     add_node_mode = false;
     show_city_name_input(new_node);
   }
-  destroy_node_options();
+  destroy_options();
 }
 
 function node_tapped(event) {
@@ -135,6 +134,11 @@ function node_pos_change(event) {
   let node = event.target;
   let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
   api_update_node(pk, node_api_data(node)).then();
+}
+
+function link_tapped(event) {
+  let link = event.target;
+  open_link_options(link);
 }
 
 function add_city_btn_click() {
@@ -185,14 +189,6 @@ function confirm_city_name(node_id) {
   new_node = null;
 }
 
-function node_api_data(node) {
-  return  {
-    'pos_h': Math.round(node.position().x),
-    'pos_v': Math.round(node.position().y),
-    'city': {'name': node.data('label')}
-  }
-}
-
 function cancel_add_node_mode() {
   add_node_mode = false;
   add_city_btn.innerText = add_city_btn_text;
@@ -235,20 +231,13 @@ function create_link(end_node) {
 }
 
 function show_link_dist_input(link) {
-  let input_form = document.createElement('div');
-  input_form.classList.add(link_dist_form_class);
-  input_form.style.position = 'fixed';
-  input_form.style.top = `${link.renderedMidpoint().y + 15}px`;
-  input_form.style.left = `${link.renderedMidpoint().x}px`;
-  let input_field = document.createElement('input');
-  input_field.classList.add(link_dist_input_class);
+  let options_div = create_options_wrapper(link.renderedMidpoint());
+  let input_form = create_link_dist_form();
+  let input_field = create_link_dist_input();
   input_form.appendChild(input_field);
-  let confirm_btn = document.createElement('button');
-  confirm_btn.innerHTML = "Set";
-  confirm_btn.classList.add(confirm_link_dist_btn_class);
-  confirm_btn.setAttribute('onclick', `confirm_link_dist('${link.data('id')}')`);
-  input_form.appendChild(confirm_btn);
-  document.getElementsByTagName('main')[0].appendChild(input_form);
+  input_form.appendChild(create_link_dist_confirm_btn(link));
+  options_div.appendChild(input_form);
+  document.getElementsByTagName('main')[0].appendChild(options_div);
   input_field.focus();
 }
 
@@ -256,6 +245,7 @@ function confirm_link_dist(link_id) {
   let input_value = document.getElementsByClassName(link_dist_input_class)[0].value;
   let link = cy.getElementById(link_id);
   link.data(link_dist_attr, input_value);
+  api_create_link(link_api_data(link)).then((data) => window.location.reload());
   cancel_add_link_mode();
   new_link_start.style(node_default_style);
   link.target().style(node_default_style);
@@ -277,38 +267,24 @@ function destroy_link_dist_input() {
 }
 
 function open_node_options(node) {
-  let options_div = document.createElement('div');
-  options_div.classList.add(node_options_div_class);
-  options_div.style.position = 'fixed';
-  options_div.style.top = `${node.renderedPosition().y}px`;
-  options_div.style.left = `${node.renderedPosition().x + 20}px`;
-  let name_change_form = document.createElement('div');
-  name_change_form.classList.add(node_rename_form_class);
-  let input_field = document.createElement('input');
-  input_field.classList.add(node_rename_input_class);
+  let options_div = create_options_wrapper(node.renderedPosition());
+  let name_change_form = create_node_name_form();
+  let input_field = create_node_name_input();
   name_change_form.appendChild(input_field);
-  let confirm_btn = document.createElement('button');
-  confirm_btn.innerHTML = "Rename";
-  confirm_btn.classList.add(confirm_node_rename_btn_class);
-  confirm_btn.setAttribute('onclick', `change_city_name('${node.id()}')`);
-  name_change_form.appendChild(confirm_btn);
+  name_change_form.appendChild(create_node_change_confirm_btn(node));
+  name_change_form.appendChild(create_node_delete_btn(node));
   options_div.appendChild(name_change_form);
-  let delete_btn = document.createElement('button');
-  delete_btn.innerHTML = "Delete";
-  delete_btn.classList.add(delete_node_btn_class);
-  delete_btn.setAttribute('onclick', `delete_node_confirm(this, '${node.id()}')`);
-  name_change_form.appendChild(delete_btn);
   document.getElementsByTagName('main')[0].appendChild(options_div);
   input_field.focus();
 }
 
 function change_city_name(node_id) {
-  let input_value = document.getElementsByClassName(node_rename_input_class)[0].value;
+  let input_value = document.getElementsByClassName(city_name_input_class)[0].value;
   let node = cy.getElementById(node_id);
   node.data('label', input_value);
   let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
   api_update_node(pk, node_api_data(node)).then();
-  destroy_node_options();
+  destroy_options();
 }
 
 function delete_node_confirm(btn, node_id) {
@@ -321,11 +297,11 @@ function delete_node(node_id) {
   node.remove();
   let pk = node.data('id').slice(1);  // because the first character is the "n" marker for nodes
   api_destroy_node(pk).then();
-  destroy_node_options();
+  destroy_options();
 }
 
-function destroy_node_options() {
-  let options_div = document.getElementsByClassName(node_options_div_class)[0];
+function destroy_options() {
+  let options_div = document.getElementsByClassName(options_wrapper_div_class)[0];
   if (options_div) {
     options_div.remove();
   }
@@ -347,4 +323,140 @@ function get_adjacency_matrix() {
     adj_mat.push(row);
   }
   console.log(adj_mat);
+}
+
+function open_link_options(link) {
+  let options_div = create_options_wrapper(link.renderedMidpoint());
+  let link_dist_form = create_link_dist_form();
+  let input_field = create_link_dist_input();
+  link_dist_form.appendChild(input_field);
+  link_dist_form.appendChild(create_link_dist_change_btn(link));
+  link_dist_form.appendChild(create_link_delete_btn(link));
+  options_div.appendChild(link_dist_form);
+  document.getElementsByTagName('main')[0].appendChild(options_div);
+  input_field.focus();
+}
+
+function change_link_dist(link_id) {
+  let input_value = document.getElementsByClassName(link_dist_input_class)[0].value;
+  let link = cy.getElementById(link_id);
+  link.data(link_dist_attr, input_value);
+  let pk = link.data('id').slice(1);  // because the first character is the "e" marker for edges
+  api_update_link(pk, link_api_data(link)).then((data) => console.log(data));
+  destroy_options();
+}
+
+function delete_link_confirm(btn, link_id) {
+  btn.innerHTML = "Confirm deletion";
+  btn.setAttribute('onclick', `delete_link('${link_id}')`);
+}
+
+function delete_link(link_id) {
+  let link = cy.getElementById(link_id);
+  link.remove();
+  let pk = link.data('id').slice(1);  // because the first character is the "e" marker for edges
+  api_destroy_link(pk).then();
+  destroy_options();
+}
+
+///////////////////////////
+// DOM element creation: //
+
+function create_options_wrapper(pos) {
+  let options_div = document.createElement('div');
+  options_div.classList.add(options_wrapper_div_class);
+  options_div.style.position = 'fixed';
+  options_div.style.top = `${pos.y}px`;
+  options_div.style.left = `${pos.x + 20}px`;
+  return options_div;
+}
+
+function create_node_name_form() {
+  let name_change_form = document.createElement('div');
+  name_change_form.classList.add(city_name_form_class);
+  return name_change_form;
+}
+
+function create_node_name_input() {
+  let input_field = document.createElement('input');
+  input_field.classList.add(city_name_input_class);
+  return input_field;
+}
+
+function create_node_set_confirm_btn(node) {
+  let confirm_btn = document.createElement('button');
+  confirm_btn.innerHTML = "Add";
+  confirm_btn.classList.add(confirm_city_name_btn_class);
+  confirm_btn.setAttribute('onclick', `confirm_city_name('${node.id()}')`);
+  return confirm_btn;
+}
+
+function create_node_change_confirm_btn(node) {
+  let confirm_btn = document.createElement('button');
+  confirm_btn.innerHTML = "Rename";
+  confirm_btn.classList.add(confirm_node_rename_btn_class);
+  confirm_btn.setAttribute('onclick', `change_city_name('${node.id()}')`);
+  return confirm_btn;
+}
+
+function create_node_delete_btn(node) {
+  let delete_btn = document.createElement('button');
+  delete_btn.innerHTML = "Delete";
+  delete_btn.classList.add(delete_node_btn_class);
+  delete_btn.setAttribute('onclick', `delete_node_confirm(this, '${node.id()}')`);
+  return delete_btn;
+}
+
+function create_link_dist_form() {
+  let input_form = document.createElement('div');
+  input_form.classList.add(link_dist_form_class);
+  return input_form;
+}
+
+function create_link_dist_input() {
+  let input_field = document.createElement('input');
+  input_field.classList.add(link_dist_input_class);
+  return input_field;
+}
+
+function create_link_dist_confirm_btn(link) {
+  let confirm_btn = document.createElement('button');
+  confirm_btn.innerHTML = "Set";
+  confirm_btn.classList.add(confirm_link_dist_btn_class);
+  confirm_btn.setAttribute('onclick', `confirm_link_dist('${link.data('id')}')`);
+  return confirm_btn;
+}
+
+function create_link_dist_change_btn(link) {
+  let confirm_btn = document.createElement('button');
+  confirm_btn.innerHTML = "Set dist.";
+  confirm_btn.classList.add(confirm_link_dist_btn_class);
+  confirm_btn.setAttribute('onclick', `change_link_dist('${link.id()}')`);
+  return confirm_btn;
+}
+
+function create_link_delete_btn(link) {
+  let delete_btn = document.createElement('button');
+  delete_btn.innerHTML = "Delete";
+  delete_btn.classList.add(delete_node_btn_class);
+  delete_btn.setAttribute('onclick', `delete_link_confirm(this, '${link.id()}')`);
+  return delete_btn;
+}
+
+
+
+function node_api_data(node) {
+  return  {
+    'pos_h': Math.round(node.position().x),
+    'pos_v': Math.round(node.position().y),
+    'city': {'name': node.data('label')}
+  }
+}
+
+function link_api_data(link) {
+  return  {
+    'tail': link.data('source').slice(1),  // because the first character is the "n" marker for nodes
+    'head': link.data('target').slice(1),
+    'distance': link.data('weight')
+  }
 }

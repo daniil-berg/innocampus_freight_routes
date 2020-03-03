@@ -71,9 +71,11 @@ class LinkRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
+        reverse_data = request.data.copy()
+        reverse_data['head'], reverse_data['tail'] = request.data['tail'], request.data['head']
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer_reverse = self.get_serializer(instance.reverse, data=request.data, partial=partial)
+        serializer_reverse = self.get_serializer(instance.reverse, data=reverse_data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer_reverse.is_valid(raise_exception=True)
         self.perform_update(serializer)
