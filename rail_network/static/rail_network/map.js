@@ -551,6 +551,7 @@ async function show_shortest_path(start, end) {
     alert_from_top(`No Path exists`)
   }
   destroy_options();
+  shortest_path_start = null;
 }
 
 
