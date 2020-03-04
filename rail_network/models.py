@@ -258,7 +258,7 @@ class Link(AbstractModel):
     )
 
     def __str__(self) -> str:
-        return f"[{self.tail}] -> [{self.head}]"
+        return "[{}] -> [{}]".format(self.tail, self.head)
 
     @property
     def reverse(self):
