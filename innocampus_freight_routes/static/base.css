@@ -6,6 +6,39 @@
     font-size: 18px;
 }
 
+#alert-from-top {
+    position: absolute;
+    z-index: 101;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #acfd69;
+    line-height: 2.5;
+    overflow: hidden;
+    -webkit-box-shadow: 0 0 5px black;
+    -moz-box-shadow:    0 0 5px black;
+    box-shadow:         0 0 5px black;
+}
+
+#close-alert {
+    margin-right: 30px;
+    color: black;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#close-alert:hover {
+    color: dimgrey;
+    cursor: pointer;
+}
+
 button {
     background: #0010a6;
     color: #fff;
