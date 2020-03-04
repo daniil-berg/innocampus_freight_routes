@@ -10,7 +10,7 @@ const city_name_form_class = 'city-name-form';
 const city_name_input_class = 'city-name-input';
 const confirm_city_name_btn_class = 'confirm-city-name';
 
-const add_link_btn_text = 'Add route';
+const add_link_btn_text = 'Add link';
 const link_dist_form_class = 'link-dist-form';
 const link_dist_input_class = 'link-dist-input';
 const confirm_link_dist_btn_class = 'confirm-link-dist';
@@ -110,7 +110,6 @@ function disable_link_add() {
 function canvas_tapped(event) {
   if (add_node_mode === true) {
     new_node = place_node(event.position.x, event.position.y);
-    add_node_mode = false;
     show_city_name_input(new_node);
   }
   destroy_options();
@@ -125,6 +124,7 @@ function node_tapped(event) {
     } else {
       node.style(node_highlight_style);
       new_link_start = node;
+      alert_from_top('Select link END (click/tap on city node)', 2000)
     }
   } else if (shortest_path_mode === true) {
     if (shortest_path_start) {
@@ -132,6 +132,7 @@ function node_tapped(event) {
     } else {
       node.style(node_highlight_style);
       shortest_path_start = node;
+      alert_from_top('Select path END (click/tap on city node)', 2000)
     }
   } else {
     open_node_options(node);
@@ -164,6 +165,7 @@ function add_city_btn_click() {
     add_node_mode = true;
     add_city_btn.innerText = cancel_btn_text;
     add_city_btn.setAttribute('class', cancel_btn_class);
+    alert_from_top('Click/tap canvas to place new city node', 2000)
   } else {
     cancel_add_node_mode();
     if (new_node !== null) {
@@ -177,6 +179,7 @@ function add_link_btn_click() {
     add_link_mode = true;
     add_link_btn.innerText = cancel_btn_text;
     add_link_btn.setAttribute('class', cancel_btn_class);
+    alert_from_top('Select link START (click/tap on city node)', 2000)
   } else {
     cancel_add_link_mode();
     if (new_link !== null) {
@@ -190,6 +193,7 @@ function shortest_path_btn_click() {
     shortest_path_mode = true;
     shortest_path_btn.innerText = cancel_btn_text;
     shortest_path_btn.setAttribute('class', cancel_btn_class);
+    alert_from_top('Select path START (click/tap on city node)', 2000)
   } else {
     cancel_shortest_path_mode();
   }
@@ -267,6 +271,7 @@ function cancel_add_link_mode() {
   add_link_btn.innerText = add_link_btn_text;
   add_link_btn.removeAttribute('class');
   destroy_link_dist_input();
+  cy.nodes().style(node_default_style);
 }
 
 function destroy_link_dist_input() {
@@ -456,6 +461,7 @@ function confirm_city_name(node_id) {
   api_create_node(node_api_data(node)).then(() => window.location.reload());
   cancel_add_node_mode();
   new_node = null;
+  add_node_mode = false;
 }
 
 function change_city_name(node_id) {
