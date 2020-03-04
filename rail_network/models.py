@@ -146,6 +146,8 @@ class Map(AbstractModel):
             for link in Link.objects.filter(tail=v):
                 # Calculate alternate distance to head
                 # either as the sum of link distances or als maximum link distance on the path
+                if link.distance < 0:
+                    raise ValueError("Link Distance must be non-negative")
                 alt_dist = dist[v.pk] + link.distance if sum_costs else max(dist[v.pk], link.distance)
 
                 # If currently minimal distance to link head is greater than
