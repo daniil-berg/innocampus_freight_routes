@@ -175,6 +175,8 @@ class Map(AbstractModel):
         dist = distances[end]
         if isinstance(start, Node):
             start = start.pk
+        if dist == inf:
+            return inf, []
         path = self.backtrack_from_to(end=end, start=start, predecessors=predecessors)
         return dist, path
 

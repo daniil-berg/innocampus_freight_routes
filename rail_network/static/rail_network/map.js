@@ -534,19 +534,23 @@ async function show_shortest_path(start, end) {
   let start_id = start.slice(1);  // because the first character is the "n" marker for nodes
   let end_id = end.slice(1);
   const result = await api_get_shortest_path(start_id, end_id);
-  let node_labels = [];
-  let prev_node_id = 'n' + start_id;
-  for (let pk of result['path'].slice(1)) {
-    let current_node_id = 'n' + pk;
-    let node = cy.getElementById(current_node_id);
-    node_labels.push(node.data('label'));
-    let edge = cy.filter(`edge[source = "${prev_node_id}"][target = "${current_node_id}"]`);
-    node.style(node_highlight_style);
-    edge.style(link_highlight_style);
-    prev_node_id = current_node_id;
+  if (result['dist'] !== -1) {
+    let node_labels = [];
+    let prev_node_id = 'n' + start_id;
+    for (let pk of result['path'].slice(1)) {
+      let current_node_id = 'n' + pk;
+      let node = cy.getElementById(current_node_id);
+      node_labels.push(node.data('label'));
+      let edge = cy.filter(`edge[source = "${prev_node_id}"][target = "${current_node_id}"]`);
+      node.style(node_highlight_style);
+      edge.style(link_highlight_style);
+      prev_node_id = current_node_id;
+    }
+    alert_from_top(`Path length ${result['dist']} via ${node_labels}`)
+  } else {
+    alert_from_top(`No Path exists`)
   }
   destroy_options();
-  alert_from_top(`Path length ${result['dist']} via ${node_labels}`)
 }
 
 

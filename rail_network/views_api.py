@@ -1,3 +1,5 @@
+from math import inf
+
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from rest_framework.decorators import api_view
@@ -31,6 +33,8 @@ def shortest_path(request: Request) -> Response:
     algorithm = request.query_params.get('algorithm', 'dijkstra')
     if algorithm == 'dijkstra':
         dist, path = map_obj.dijkstra_from_to(start=start_id, end=end_id)
+        if dist == inf:
+            dist = -1
         return Response(data={'dist': dist, 'path': path})
     else:
         return Response("Algorithm '{}' not valid or not implemented".format(algorithm), status=HTTP_400_BAD_REQUEST)
