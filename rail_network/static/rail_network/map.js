@@ -416,10 +416,14 @@ function create_link_delete_btn(link) {
 function create_algorithm_select() {
   let select_field = document.createElement('select');
   select_field.classList.add(algorithm_select_class);
-  let option = document.createElement('option');
-  option.setAttribute('value', 'dijkstra')
-  option.innerHTML = "Dijkstra";
-  select_field.appendChild(option);
+  let option1 = document.createElement('option');
+  option1.setAttribute('value', 'dijkstra');
+  option1.innerHTML = "Dijkstra";
+  let option2 = document.createElement('option');
+  option2.setAttribute('value', 'a_star');
+  option2.innerHTML = "A*";
+  select_field.appendChild(option1);
+  select_field.appendChild(option2);
   return select_field;
 }
 
@@ -427,7 +431,9 @@ function create_algorithm_start_btn(end_node) {
   let confirm_btn = document.createElement('button');
   confirm_btn.innerHTML = "Start";
   confirm_btn.classList.add(algorithm_start_btn_class);
-  confirm_btn.setAttribute('onclick', `show_shortest_path('${shortest_path_start.data("id")}', '${end_node.data("id")}')`);
+  let start = shortest_path_start.data("id");
+  let end = end_node.data("id");
+  confirm_btn.setAttribute('onclick', `show_shortest_path('${start}', '${end}')`);
   return confirm_btn;
 }
 
@@ -533,7 +539,10 @@ function delete_link(link_id) {
 async function show_shortest_path(start, end) {
   let start_id = start.slice(1);  // because the first character is the "n" marker for nodes
   let end_id = end.slice(1);
-  const result = await api_get_shortest_path(start_id, end_id);
+  let alg_sel = document.getElementsByClassName(algorithm_select_class)[0];
+  let algorithm = alg_sel.options[alg_sel.selectedIndex].value;
+  let algorithm_str = alg_sel.options[alg_sel.selectedIndex].innerText;
+  const result = await api_get_shortest_path(start_id, end_id, algorithm);
   if (result['dist'] !== -1) {
     let node_labels = [];
     let prev_node_id = 'n' + start_id;
@@ -546,7 +555,7 @@ async function show_shortest_path(start, end) {
       edge.style(link_highlight_style);
       prev_node_id = current_node_id;
     }
-    alert_from_top(`Path length ${result['dist']} via ${node_labels}`)
+    alert_from_top(`Path length ${result['dist']} via ${node_labels} (Algorithm used: ${algorithm_str})`)
   } else {
     alert_from_top(`No Path exists`)
   }

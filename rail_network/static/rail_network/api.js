@@ -22,11 +22,12 @@ async function api_request(type, api_url, request_data={}) {
   }
 }
 
-async function api_get_shortest_path(start_id, end_id, map_id = current_map_id) {
+async function api_get_shortest_path(start_id, end_id, algorithm = 'dijkstra', map_id = current_map_id) {
   let request_data = {
     'map': map_id,
     'start': start_id,
     'end': end_id,
+    'algorithm': algorithm,
   };
   return await api_request('GET', api_shortest_path_url, request_data);
 }

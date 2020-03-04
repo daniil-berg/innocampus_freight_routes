@@ -1,5 +1,5 @@
 from typing import Optional, Union, Tuple, List, Dict
-from math import inf
+from math import inf, sqrt
 
 from django.db.models import (Model,
                               CharField,
@@ -112,11 +112,12 @@ class Map(AbstractModel):
     def cytoscape_elements_list(self):
         return self.cytoscape_nodes_list + self.cytoscape_links_list
 
-    def dijkstra(self, start: Union[int, 'Node'], sum_costs: bool = True, unreachable_dist: float = inf
-                 ) -> Tuple[Dict[int, float], Dict[int, Optional[int]]]:
+    def _dijkstra_a_star(self, start: Union[int, 'Node'], algorithm: str, sum_costs: bool = True,
+                         unreachable_dist: float = inf) -> Tuple[Dict[int, float], Dict[int, Optional[int]]]:
         """
         Determines shortest paths to all nodes from a specified starting node.
         Implementation of Dijkstra's algorithm.
+        Implementation of the A* algorithm.
 
         Args:
             start: Starting node
@@ -129,6 +130,8 @@ class Map(AbstractModel):
                 dist - every key is a node id, every value is the minimum distance to that node from start
                 pred - every key is a node id, every value is the predecessor node's id on the shortest path from start
         """
+        if algorithm not in ('dijkstra', 'a_star'):
+            raise ValueError
         if not isinstance(start, Node):
             start = Node.objects.get(pk=start)
         dist, pred = {}, {}
@@ -156,8 +159,19 @@ class Map(AbstractModel):
                     dist[link.head.pk] = alt_dist
                     pred[link.head.pk] = v.pk
                     if link.head.pk not in priority_q:
-                        priority_q[link.head] = dist[link.head.pk]
+                        prio = dist[link.head.pk]
+                        if algorithm == 'a_star':
+                            prio += link.euclidean_dist
+                        priority_q[link.head] = prio
         return dist, pred
+
+    def dijkstra(self, start: Union[int, 'Node'], sum_costs: bool = True,
+                 unreachable_dist: float = inf) -> Tuple[Dict[int, float], Dict[int, Optional[int]]]:
+        return self._dijkstra_a_star(start, 'dijkstra', sum_costs=sum_costs, unreachable_dist=unreachable_dist)
+
+    def a_star(self, start: Union[int, 'Node'], sum_costs: bool = True, unreachable_dist: float = inf
+               ) -> Tuple[Dict[int, float], Dict[int, Optional[int]]]:
+        return self._dijkstra_a_star(start, 'a_star', sum_costs=sum_costs, unreachable_dist=unreachable_dist)
 
     @staticmethod
     def backtrack_from_to(start: int, end: int, predecessors: Dict[int, Optional[int]]) -> List[int]:
@@ -169,11 +183,17 @@ class Map(AbstractModel):
         path.reverse()
         return path
 
-    def dijkstra_from_to(self, start: Union[int, 'Node'], end: Union[int, 'Node'], sum_costs: bool = True,
-                         unreachable_dist: float = inf) -> Tuple[float, List[int]]:
+    def shortest_path_from_to(self, start: Union[int, 'Node'], end: Union[int, 'Node'], algorithm: str = 'dijkstra',
+                              sum_costs: bool = True, unreachable_dist: float = inf) -> Tuple[float, List[int]]:
         if isinstance(end, Node):
             end = end.pk
-        distances, predecessors = self.dijkstra(start=start, sum_costs=sum_costs, unreachable_dist=unreachable_dist)
+        if algorithm == 'dijkstra':
+            f = self.dijkstra
+        elif algorithm == 'a_star':
+            f = self.a_star
+        else:
+            raise ValueError
+        distances, predecessors = f(start=start, sum_costs=sum_costs, unreachable_dist=unreachable_dist)
         dist = distances[end]
         if isinstance(start, Node):
             start = start.pk
@@ -270,6 +290,10 @@ class Link(AbstractModel):
             return Link.objects.get(tail=self.head, head=self.tail)
         except Link.DoesNotExist:
             return None
+
+    @property
+    def euclidean_dist(self) -> float:
+        return sqrt((self.head.pos_h - self.tail.pos_h)**2 + (self.head.pos_v - self.tail.pos_v)**2)
 
     class Meta:
         constraints = [

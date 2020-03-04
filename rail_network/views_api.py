@@ -31,8 +31,8 @@ def shortest_path(request: Request) -> Response:
         return Response("Node ID {} on Map ID {} does not exist".format(end_id, map_id), status=HTTP_404_NOT_FOUND)
 
     algorithm = request.query_params.get('algorithm', 'dijkstra')
-    if algorithm == 'dijkstra':
-        dist, path = map_obj.dijkstra_from_to(start=start_id, end=end_id)
+    if algorithm in ('dijkstra', 'a_star'):
+        dist, path = map_obj.shortest_path_from_to(start=start_id, end=end_id, algorithm=algorithm)
         if dist == inf:
             dist = -1
         return Response(data={'dist': dist, 'path': path})
