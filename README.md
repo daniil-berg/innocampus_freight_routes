@@ -1,10 +1,10 @@
 # innoCampus Freight Routes (Aufgabe vom 24. Februar 2020)
 
 ## Installation
-Benötigt Python 3.5 oder höher sowie das Python Modul `pipenv` global (für Python 3) installiert. 
+Benötigt **Python 3.5 oder höher** sowie das Python Modul `pipenv` global (für Python 3) installiert. 
 Letzteres wird andernfalls automatisch nachinstalliert.
 
-`pip3` sollte sich entsprechend im PATH befinden.
+`pip3` sollte sich dazu entsprechend im PATH befinden.
 
 Die Dateien für die virtuelle Umgebung werden bei der Installation im Projektverzeichnis gespeichert.
 
@@ -18,6 +18,8 @@ Zum Starten des dev. Servers innerhalb der virtuellen Umgebung:
 (**Wichtig:** NICHT `python3`)
 
 Der Server läuft dann hinter dem Port 8000.
+
+Der Server kann normal mit `Ctrl+C` ausgeschaltet werden.
 
 
 ## Externe Bibliotheken/Frameworks
@@ -53,7 +55,7 @@ Dennoch habe ich mich zur Demonstration für diese Aufteilung entschieden.
 ### Wieso ohne Apache?
 Ich habe mich bewusst dagegen entschieden, 
 ein Zusammenspiel mit Apache zu unternehmen.
-Der Development server von Django reicht für diese Arbeit vollkommen aus.
+Der Development Server von Django reicht für diese Arbeit vollkommen aus.
 Zudem hat mir meine eigene Erfahrung gezeigt, 
 dass das Deployen einer Django App mit Apache über `mod_wsgi` alles andere als trivial ist,
 sehr viele Systemconfigurationen erfordert 
