@@ -31,18 +31,30 @@ Zum Entwicklung einer angenehmen visuellen Darstellung der Graphen wurde [**Cyto
 
 ## Funktionsweise/Demonstration
 
+### Algorithmen
 Zwar bietet natürlich Cytoscape.js bereits die gängigsten Algorithmen zur Graphendurchmusterung,
 jedoch habe ich mich natürlich dazu entschieden einen solchen selbst (in Python, also im Backend) zu implementieren.
 
+### Wieso Datenbank?
 Ebenfalls zu Demonstrationszwecken wird hier eine SQLite Datenbank verwendet.
 Die Graphenstruktur wird damit über das Django-eigene ORM in die Datenbank ge-mapped.
-
 Sämtliche Veränderungen des Graphen im Browser rufen asynchrone Serverabfragen, 
 welche die Änderungen in der Datenbank speichern.
+Bei erneutem Aufruf der Seite, wird der letzte Stand geladen.
 
+### Server- vs. Client-seitig
 Somit läuft auch der Kürzeste-Wege-Algorithmus auf dem Server.
 Bei größeren Strukturen bietet der Server in der Regel größere Rechenkapazitäten.
 Der u.U. dadurch gewonnene Geschwindigkeitsvorteil kann dann ggf. die
 kurzen Verzögerungen bei den AJAX calls ausgleichen.
 In diesem Arbeitsbeispiel wird dies aber wohl kaum der Fall sein.
 Dennoch habe ich mich zur Demonstration für diese Aufteilung entschieden.
+
+### Wieso ohne Apache?
+Ich habe mich bewusst dagegen entschieden, 
+ein Zusammenspiel mit Apache zu unternehmen.
+Der Development server von Django reicht für diese Arbeit vollkommen aus.
+Zudem hat mir meine eigene Erfahrung gezeigt, 
+dass das Deployen einer Django App mit Apache über `mod_wsgi` alles andere als trivial ist,
+sehr viele Systemconfigurationen erfordert 
+und im Rahmen dieser Aufgabe entsprechend viel zu aufwändig wäre.
