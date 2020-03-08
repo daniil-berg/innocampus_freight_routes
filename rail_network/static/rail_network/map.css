@@ -1,14 +1,4 @@
-main {
-    width: 100vw;
-    height: 80vh;
-}
-
-canvas {
-    display: block;
-}
-
 #map {
-    display: block;
     width: 100vw;
     height: 100vh;
     background: rgb(216, 238, 255);
