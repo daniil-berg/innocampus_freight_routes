@@ -9,9 +9,17 @@
     {% block css %}{% endblock css %}
 </head>
 <body>
+    <header>
+        {% block header %}{% endblock header %}
+    </header>
     <main>
         {% block main %}{% endblock main %}
     </main>
+    <footer>
+        {% block footer %}{% endblock footer %}
+    </footer>
+
+    <!-- JavaScript -->
     <script type="text/javascript" src="{% static 'jquery-3.4.1.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'base.js' %}"></script>
     {% block js %}{% endblock js %}
