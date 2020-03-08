@@ -3,7 +3,7 @@
     margin: 0;
     padding: 0;
     font-family: Calibri, sans-serif;
-    font-size: 18px;
+    font-size: 10px;
 }
 
 #alert-from-top {
@@ -42,10 +42,11 @@
 button {
     background: #0010a6;
     color: #fff;
-    padding: 8px 16px;
+    padding: 4px 8px;
     border: none;
     border-radius: 20px;
     font-weight: bold;
+    font-size: 9pt;
 }
 
 button:hover {
@@ -56,4 +57,16 @@ button:hover {
 button:disabled {
     background: #484848;
     cursor: default;
+}
+
+
+
+@media (min-width: 768px) {
+    * {
+        font-size: 18px;
+    }
+    button {
+        padding: 8px 16px;
+        font-size: 14pt;
+    }
 }

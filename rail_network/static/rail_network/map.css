@@ -1,13 +1,14 @@
-#map {
-    width: 100vw;
-    height: 100vh;
-    background: rgb(216, 238, 255);
+#menu {
+    position: fixed;
+    top: 4px;
+    left: 4px;
+    z-index: 100;
+    display: flex;
+    flex-flow: column;
 }
 
-#actions {
-    position: fixed;
-    top: 10px;
-    left: 10px;
+#menu button {
+    margin-bottom: 5px;
 }
 
 button.cancel {
@@ -17,6 +18,14 @@ button.cancel {
 
 button.cancel:hover {
     background: #383838 !important;
+}
+
+
+/* Canvas: */
+#map {
+    width: 100vw;
+    height: 100vh;
+    background: rgb(216, 238, 255);
 }
 
 .options-wrapper {
@@ -89,4 +98,20 @@ button.algorithm-start {
 }
 button.algorithm-start:hover {
     background: green;
+}
+
+
+
+
+@media (min-width: 768px) {
+    #menu {
+        top: 10px;
+        left: 10px;
+        flex-flow: row;
+    }
+
+    #menu button {
+        margin-bottom: 0;
+        margin-right: 10px;
+    }
 }
