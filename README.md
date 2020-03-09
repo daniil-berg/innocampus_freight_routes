@@ -1,6 +1,35 @@
 # innoCampus Freight Routes (Aufgabe vom 24. Februar 2020)
 
+## Aufgabe
+
+Ein Logistik-Unternehmen betreibt Güterzüge auf einem Teil des Bahnnetzes
+eines (kleinen) Landes. Alle Knoten des Netzes liegen auf Städten. Zwischen
+je zwei Städten gibt es höchstens eine in beiden Richtungen befahrbare
+Bahnstrecke ohne Zwischenhalt. Sollen nun Güter von einer Stadt A zu einer
+anderen Stadt B gefahren werden, ist der kürzeste Weg auf dem Streckennetz
+von A nach B gesucht.
+
+Schreiben Sie dazu ein Programm mit einer einfachen Web-Oberfläche in
+Python oder PHP.
+
+1. Die aktuelle Definition des Streckennetzes wird in einer einfachen Form
+angezeigt.
+2. Es ist möglich, Städte und Verbindungen zwischen Städten mit einer
+Längenangabe hinzuzufügen.
+3. Der Nutzer kann zwei Städte auswählen und per Knopf-Klicken einen
+optimalen (d.h. kürzesten) Weg zwischen diesen Städten anzeigen lassen.
+4. Kümmern Sie sich auch um die Behandlung von Fehlern, die dabei
+auftreten können.
+
+Für die Umsetzung der Web-Oberfläche dürfen Sie Frameworks/Libraries
+einsetzen. Bitte verwenden Sie insgesamt jedoch möglichst wenig externe Abhängigkeiten.
+
 ## Installation
+
+Da bei der Installation eine Umgebungsvariable gesetzt wird, 
+sollte das Skript mit dem `source`-Befehl aufgerufen werden, 
+also `source install_freight_routes.sh`. (getestet mit Debian/Ubuntu)
+
 Benötigt **Python 3.5 oder höher** sowie das Python Modul `pipenv` global (für Python 3) installiert. 
 Letzteres wird andernfalls automatisch nachinstalliert.
 
